@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftth-frontend-service
+spec:
+  type: NodePort
+  selector:
+    # Esto debe coincidir con los labels de tu Deployment del Frontend
+    app: ftth-frontend
+  ports:
+    - port: 80           # El puerto del Service
+      targetPort: 80     # El puerto donde escucha Nginx dentro del Pod
+      nodePort: 30080    # El puerto fijo que abrimos en la PC

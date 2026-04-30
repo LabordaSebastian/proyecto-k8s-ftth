@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ftth-network-checker
+  labels:
+    app: ftth-network-checker
+    tier: worker
+spec:
+  # El horario (Schedule) usa la sintaxis estándar de Linux: Minuto, Hora, Día del Mes, Mes, Día de la Semana.
+  # "*/2 * * * *" significa: Ejecutar cada 2 minutos.
+  schedule: "*/2 * * * *"
+  # Cuántos trabajos completados o fallidos queremos guardar en el historial para revisarlos después
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: checker
+            # Busybox es una imagen de Linux que pesa menos de 2 Megabytes. Ideal para tareas rápidas.
+            image: busybox:latest
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            # Este script usa 'wget' para golpear internamente a tu Backend usando su Service DNS
+            - |
+              echo "--- Iniciando chequeo de salud de la red FTTH ---"
+              date
+              wget -qO- http://ftth-backend-service:5000/status || echo "¡Alerta! Fallo al conectar con el Backend de la red."
+              echo -e "\n--- Chequeo finalizado exitosamente ---"
+            resources:
+              requests:
+                memory: "16Mi"
+                cpu: "10m"
+              limits:
+                memory: "32Mi"
+                cpu: "50m"
+          # ¡CRUCIAL PARA UN JOB! No queremos que K8s intente mantenerlo vivo para siempre.
+          restartPolicy: OnFailure

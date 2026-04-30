@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftth-backend
+  labels:
+    app: ftth-backend
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ftth-backend
+  template:
+    metadata:
+      labels:
+        app: ftth-backend
+    spec:
+      containers:
+      - name: python-api
+        image: ftth-backend:v1
+        imagePullPolicy: Never # Crucial: Le dice a K8s que no busque en internet, que use la que inyectamos
+        ports:
+        - containerPort: 5000
+        env:
+        - name: REDIS_HOST
+          value: "ftth-redis-service" # El DNS de tu Service
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"

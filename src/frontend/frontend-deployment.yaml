@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftth-frontend
+  labels:
+    app: ftth-frontend
+    tier: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels: 
+      app: ftth-frontend
+  template:
+    metadata:
+      labels:
+        app: ftth-frontend
+    spec:
+      containers:
+      - name: nginx-web
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      # --- Montamos el volumen en la ruta de Nginx ---
+        volumeMounts:
+        - name: html-volume
+          mountPath: /usr/share/nginx/html
+      # --- Definimos de dónde sale el volumen ---
+      volumes:
+      - name: html-volume
+        configMap:
+          name: ftth-dashboard-html

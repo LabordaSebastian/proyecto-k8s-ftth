@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ftth-dashboard-html
+  labels:
+    app: ftth-frontend
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>FTTH Network Dashboard</title>
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #ffffff; margin: 0; padding: 20px; }
+            .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #333; }
+            .header h1 { margin: 0; color: #00d2ff; letter-spacing: 2px; text-transform: uppercase; }
+            .container { display: flex; justify-content: space-around; flex-wrap: wrap; margin-top: 40px; }
+            .card { background: #1e1e1e; border-radius: 10px; padding: 30px; width: 250px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: transform 0.3s; }
+            .card:hover { transform: translateY(-5px); }
+            .status-indicator { width: 20px; height: 20px; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px; }
+            .online { background-color: #00ff00; box-shadow: 0 0 15px #00ff00; }
+            .value { font-size: 2em; font-weight: bold; margin: 15px 0; color: #00d2ff; }
+            .footer { text-align: center; margin-top: 50px; font-size: 0.8em; color: #777; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Panel de Control FTTH</h1>
+            <p>Monitoreo de Infraestructura de Fibra Óptica</p>
+        </div>
+        <div class="container">
+            <div class="card">
+                <h3>Estado OLT Principal</h3>
+                <div class="status-indicator online"></div>
+                <p>En línea y operando</p>
+            </div>
+            <div class="card">
+                <h3>Clientes Activos (ONTs)</h3>
+                <div class="value">1,024</div>
+                <p>Nodos sincronizados</p>
+            </div>
+            <div class="card">
+                <h3>Latencia Promedio</h3>
+                <div class="value">2.4 ms</div>
+                <p>Hacia el Backbone</p>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Generado dinámicamente vía Kubernetes ConfigMap | Proyecto CKA</p>
+        </div>
+    </body>
+    </html>

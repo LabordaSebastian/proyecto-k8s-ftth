@@ -1,0 +1,13 @@
+cat <<EOF > .gitignore
+# Archivos de intercambio de Vim
+*.swp
+*.swo
+
+# Archivos temporales
+.tmp/
+.temp/
+
+# Si luego usas entornos virtuales de Python
+venv/
+__pycache__/
+EOF
