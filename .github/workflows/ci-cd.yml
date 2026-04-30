@@ -1,0 +1,40 @@
+name: FTTH CI/CD Pipeline
+
+# 1. Se ejecuta cada vez que haya un push a la rama 'main'
+on:
+  push:
+    branches:
+      - main
+
+# 2. Construye y despliega
+jobs:
+  build-and-deploy:
+    # 3.  Se ejecuta n tu PC Linux
+    runs-on: self-hosted 
+
+    steps:
+    - name: 📥 Obtener el código fuente
+      uses: actions/checkout@v4
+
+    - name: 🔨 Construir imagen de Backend localmente
+      run: |
+        echo "Construyendo la imagen de Docker..."
+        docker build -t ftth-backend:latest ./src/backend
+
+    - name: 🚀 Cargar imagen en el clúster Kind
+      run: |
+        echo "Inyectando la imagen en los nodos de Kubernetes..."
+        kind load docker-image ftth-backend:latest --name ftth-cluster
+
+    - name: ☸️ Aplicar manifiestos de Kubernetes
+      run: |
+        echo "Desplegando la infraestructura declarativa..."
+        kubectl apply -f k8s/01-namespaces-rbac/ || true
+        kubectl apply -f k8s/02-storage/
+        kubectl apply -f k8s/03-deployments/
+        kubectl apply -f k8s/05-services/
+
+    - name: ✅ Verificar estado
+      run: |
+        echo "Estado actual de los Pods:"
+        kubectl get pods
