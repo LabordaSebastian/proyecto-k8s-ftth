@@ -11,3 +11,4 @@ cat <<EOF > .gitignore
 venv/
 __pycache__/
 EOF
+kubeview-diag.yaml
