@@ -52,6 +52,27 @@ Este proyecto no es solo un despliegue de contenedores, sino una demostración p
 
 ---
 
+## 🛠️ Comandos de Inicio Rápido
+
+Para levantar la infraestructura localmente de forma rápida o detenerla, puedes utilizar los siguientes comandos:
+
+**Inicializar el Clúster Completo:**
+```bash
+# 1. Crear el clúster usando la configuración de Kind
+kind create cluster --config kind-config.yaml
+
+# 2. Aplicar todos los manifiestos de Kubernetes
+kubectl apply -R -f k8s/
+```
+
+**Detener y Eliminar el Clúster:**
+```bash
+# Destruir el clúster de Kind
+kind delete cluster --name ftth-cluster
+```
+
+---
+
 ## 📂 Estructura del Repositorio
 
 La infraestructura como código (IaC) está organizada de manera profesional para separar contextos y facilitar el mantenimiento:
