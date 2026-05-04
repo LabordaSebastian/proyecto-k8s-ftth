@@ -61,9 +61,18 @@ Para levantar la infraestructura localmente de forma rápida o detenerla, puedes
 # 1. Crear el clúster usando la configuración de Kind
 kind create cluster --config kind-config.yaml
 
-# 2. Aplicar todos los manifiestos de Kubernetes
+# 2. ⚠️ IMPORTANTE: Buildear y cargar las imágenes locales en Kind
+#    Kind NO tiene acceso al registry local del host, hay que inyectarlas manualmente.
+#    Si salteas este paso, los pods quedarán en ErrImageNeverPull.
+docker build -t ftth-backend:v1 ./src/backend/
+kind load docker-image ftth-backend:v1 --name ftth-cluster
+
+# 3. Aplicar todos los manifiestos de Kubernetes
 kubectl apply -R -f k8s/
 ```
+
+> **Recordá**: Cada vez que recrees el clúster o modifiques el código del backend,
+> debés repetir el `docker build` + `kind load` antes de aplicar los manifiestos.
 
 **Detener y Eliminar el Clúster:**
 ```bash
