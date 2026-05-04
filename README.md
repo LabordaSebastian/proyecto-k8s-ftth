@@ -52,48 +52,35 @@ Este proyecto no es solo un despliegue de contenedores, sino una demostración p
 
 ---
 
-## 🛠️ Comandos de Inicio Rápido
+## 🛠️ Gestión del Entorno Local
 
-Para levantar la infraestructura localmente de forma rápida o detenerla, puedes utilizar los siguientes comandos:
+El entorno local se gestiona con el script **`manage-env.sh`**, que automatiza todo el ciclo de vida del clúster y del GitHub Actions Runner.
 
-**Inicializar el Clúster Completo:**
+**Levantar el entorno completo:**
 ```bash
-# 1. Crear el clúster usando la configuración de Kind
-kind create cluster --config kind-config.yaml
+./manage-env.sh up
+```
+Este comando realiza automáticamente:
+1. Crea el clúster Kind (si no existe) con `kind-config.yaml`
+2. Buildea y carga la imagen `ftth-backend:v1` en los nodos de Kind *(evita `ErrImageNeverPull`)*
+3. Aplica todos los manifiestos de `k8s/` de forma recursiva
+4. Instala KubeView via Helm (si el chart está disponible en `/tmp/kubeview`)
+5. Inicia el GitHub Actions Runner en segundo plano
 
-# 2. ⚠️ IMPORTANTE: Buildear y cargar las imágenes locales en Kind
-#    Kind NO tiene acceso al registry local del host, hay que inyectarlas manualmente.
-#    Si salteas este paso, los pods quedarán en ErrImageNeverPull.
-docker build -t ftth-backend:v1 ./src/backend/
-kind load docker-image ftth-backend:v1 --name ftth-cluster
-
-# 3. Aplicar todos los manifiestos de Kubernetes
-kubectl apply -R -f k8s/
-
-# 4. Instalar KubeView (visualización del clúster) via Helm
-#    Requiere tener el repo clonado: git clone https://github.com/benc-uk/kubeview.git /tmp/kubeview
-helm install kubeview /tmp/kubeview/deploy/helm/kubeview \
-  --namespace kubeview \
-  --create-namespace \
-  --set loadBalancer.enabled=false \
-  --set nodePort.enabled=true \
-  --set nodePort.port=30088
+**Detener y destruir el entorno:**
+```bash
+./manage-env.sh down
 ```
 
-> **Recordá**: Cada vez que recrees el clúster o modifiques el código del backend,
-> debés repetir el `docker build` + `kind load` antes de aplicar los manifiestos.
-
-**URLs de acceso (una vez el clúster esté corriendo):**
+**URLs de acceso (una vez el entorno esté corriendo):**
 | Servicio | URL |
 |---|---|
 | 🌐 Frontend FTTH Dashboard | http://localhost:30080 |
 | 📊 KubeView (visualización) | http://localhost:30088 |
 
-**Detener y Eliminar el Clúster:**
-```bash
-# Destruir el clúster de Kind
-kind delete cluster --name ftth-cluster
-```
+> **Nota sobre KubeView**: Requiere tener el chart disponible localmente.
+> Clonar una vez con: `git clone https://github.com/benc-uk/kubeview.git /tmp/kubeview`
+
 
 ---
 
