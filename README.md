@@ -69,10 +69,25 @@ kind load docker-image ftth-backend:v1 --name ftth-cluster
 
 # 3. Aplicar todos los manifiestos de Kubernetes
 kubectl apply -R -f k8s/
+
+# 4. Instalar KubeView (visualización del clúster) via Helm
+#    Requiere tener el repo clonado: git clone https://github.com/benc-uk/kubeview.git /tmp/kubeview
+helm install kubeview /tmp/kubeview/deploy/helm/kubeview \
+  --namespace kubeview \
+  --create-namespace \
+  --set loadBalancer.enabled=false \
+  --set nodePort.enabled=true \
+  --set nodePort.port=30088
 ```
 
 > **Recordá**: Cada vez que recrees el clúster o modifiques el código del backend,
 > debés repetir el `docker build` + `kind load` antes de aplicar los manifiestos.
+
+**URLs de acceso (una vez el clúster esté corriendo):**
+| Servicio | URL |
+|---|---|
+| 🌐 Frontend FTTH Dashboard | http://localhost:30080 |
+| 📊 KubeView (visualización) | http://localhost:30088 |
 
 **Detener y Eliminar el Clúster:**
 ```bash
