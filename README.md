@@ -78,8 +78,7 @@ Este comando realiza automáticamente:
 | 🌐 Frontend FTTH Dashboard | http://localhost:30080 |
 | 📊 KubeView (visualización) | http://localhost:30088 |
 
-> **Nota sobre KubeView**: Requiere tener el chart disponible localmente.
-> Clonar una vez con: `git clone https://github.com/benc-uk/kubeview.git /tmp/kubeview`
+> **Nota sobre KubeView**: El chart de Helm está incluido en el repositorio bajo `deploy/helm-charts/kubeview`. No se requiere ningún paso adicional.
 
 
 ---

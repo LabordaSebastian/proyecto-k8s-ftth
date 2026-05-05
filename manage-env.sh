@@ -21,7 +21,7 @@ BACKEND_SRC="./src/backend/"
 MANIFESTS_DIR="k8s/"
 RUNNER_DIR="${HOME}/actions-runner"
 RUNNER_PID_FILE=".runner.pid"
-KUBEVIEW_CHART_DIR="/tmp/kubeview/deploy/helm/kubeview"
+KUBEVIEW_CHART_DIR="./deploy/helm-charts/kubeview"
 KUBEVIEW_NAMESPACE="kubeview"
 KUBEVIEW_PORT=30088
 
@@ -145,9 +145,9 @@ cmd_up() {
             --set nodePort.port="$KUBEVIEW_PORT"
         log_success "KubeView instalado en el puerto ${KUBEVIEW_PORT}."
     else
-        log_info "Chart de KubeView no encontrado en '${KUBEVIEW_CHART_DIR}'."
-        log_info "Para instalarlo, ejecutá primero:"
-        log_info "  git clone https://github.com/benc-uk/kubeview.git /tmp/kubeview"
+        log_error "Chart de KubeView no encontrado en '${KUBEVIEW_CHART_DIR}'."
+        log_error "El directorio deploy/helm-charts/kubeview debería existir en el repo."
+        log_error "Si fue eliminado, restauralo con: git checkout deploy/helm-charts/"
         log_info "Continuando sin KubeView..."
     fi
 
