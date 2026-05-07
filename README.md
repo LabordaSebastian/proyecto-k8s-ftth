@@ -11,6 +11,9 @@ Este repositorio contiene una **Prueba de Concepto (PoC)** integral diseñada pa
 
 El proyecto fue construido con un enfoque en las mejores prácticas de DevOps y la eficiencia de recursos, sirviendo como laboratorio práctico para los dominios de la certificación **Certified Kubernetes Administrator (CKA)**.
 
+> 📚 **DOCUMENTACIÓN OFICIAL:** Puedes leer la documentación completa y detallada paso a paso generada con MkDocs en el siguiente enlace:
+> 👉 **[Documentación del Proyecto FTTH](https://LabordaSebastian.github.io/proyecto-k8s-ftth/)**
+
 ---
 
 ## 🏗️ Arquitectura de Microservicios
