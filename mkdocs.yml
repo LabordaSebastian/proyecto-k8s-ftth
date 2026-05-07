@@ -6,8 +6,7 @@ theme:
   name: material
   features:
     - navigation.sections
-    - navigation.top
-    - toc.integrate
+    - navigation.expand
   palette:
     - scheme: default
       primary: indigo
@@ -24,8 +23,12 @@ theme:
 
 nav:
   - Inicio: index.md
-  - Entorno Local: entorno.md
-  - CI/CD (GitHub Actions): github-actions.md
+  - Entorno Local:
+      - kind-config.yaml: entorno/kind-config.md
+      - manage-env.sh: entorno/manage-env.md
+  - CI/CD (GitHub Actions):
+      - ci-cd.yml: ci-cd/ci-cd-pipeline.md
+      - docs.yml: ci-cd/docs-pipeline.md
 
 markdown_extensions:
   - admonition
