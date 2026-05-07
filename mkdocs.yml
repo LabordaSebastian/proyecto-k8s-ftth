@@ -4,6 +4,12 @@ site_author: Sebastian Laborda
 
 theme:
   name: material
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.top
+    - search.suggest
+    - search.highlight
   palette:
     - scheme: default
       primary: indigo
@@ -20,12 +26,14 @@ theme:
 
 nav:
   - Inicio: index.md
-  - Entorno Local:
-      - kind-config.yaml: entorno/kind-config.md
-      - manage-env.sh: entorno/manage-env.md
-  - CI/CD (GitHub Actions):
-      - ci-cd.yml: ci-cd/ci-cd-pipeline.md
-      - docs.yml: ci-cd/docs-pipeline.md
+  - Getting Started:
+      - getting-started/index.md
+      - kind-config.yaml: getting-started/kind-config.md
+      - manage-env.sh: getting-started/manage-env.md
+  - Operaciones (CI/CD):
+      - operations/index.md
+      - ci-cd.yml: operations/ci-cd-pipeline.md
+      - docs.yml: operations/docs-pipeline.md
 
 markdown_extensions:
   - admonition
