@@ -1,4 +1,4 @@
-# 🚀 Plataforma de Aprovisionamiento FTTH - Kubernetes PoC
+# Plataforma de Aprovisionamiento FTTH - Kubernetes PoC
 
 ![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
@@ -11,19 +11,19 @@ Este repositorio contiene una **Prueba de Concepto (PoC)** integral diseñada pa
 
 El proyecto fue construido con un enfoque en las mejores prácticas de DevOps y la eficiencia de recursos, sirviendo como laboratorio práctico para los dominios de la certificación **Certified Kubernetes Administrator (CKA)**.
 
-> 📚 **DOCUMENTACIÓN OFICIAL:** Puedes leer la documentación completa y detallada paso a paso generada con MkDocs en el siguiente enlace:
-> 👉 **[Documentación del Proyecto FTTH](https://LabordaSebastian.github.io/proyecto-k8s-ftth/)**
+> **DOCUMENTACIÓN OFICIAL:** Puedes leer la documentación completa y detallada paso a paso generada con MkDocs en el siguiente enlace:
+> **[Documentación del Proyecto FTTH](https://LabordaSebastian.github.io/proyecto-k8s-ftth/)**
 
 ---
 
-## 🏗️ Arquitectura de Microservicios
+## Arquitectura de Microservicios
 
 La plataforma está dividida en componentes ligeros (imágenes Alpine) para optimizar el consumo de hardware, demostrando que es posible operar una arquitectura compleja en entornos de recursos limitados (ej. < 3GB de RAM).
 
-1. **🌐 Frontend (Web UI):** Deployment de Nginx. Sirve un dashboard moderno de monitoreo inyectado dinámicamente sin necesidad de reconstruir la imagen.
-2. **⚙️ Backend (API Python):** Microservicio desarrollado en Flask que actúa como puente de comunicación para consultar el estado de la red.
-3. **🗄️ Base de Datos (Caché):** Pod de Redis para el almacenamiento del estado simulado de los nodos de fibra óptica.
-4. **🕵️ Agente de Monitoreo:** CronJob basado en `busybox` que automatiza pruebas de latencia y disponibilidad de la red a intervalos regulares.
+1. **Frontend (Web UI):** Deployment de Nginx. Sirve un dashboard moderno de monitoreo inyectado dinámicamente sin necesidad de reconstruir la imagen.
+2. **Backend (API Python):** Microservicio desarrollado en Flask que actúa como puente de comunicación para consultar el estado de la red.
+3. **Base de Datos (Caché):** Pod de Redis para el almacenamiento del estado simulado de los nodos de fibra óptica.
+4. **Agente de Monitoreo:** CronJob basado en `busybox` que automatiza pruebas de latencia y disponibilidad de la red a intervalos regulares.
 
 ---
 
@@ -55,7 +55,7 @@ Este proyecto no es solo un despliegue de contenedores, sino una demostración p
 
 ---
 
-## 🛠️ Gestión del Entorno Local
+## Gestión del Entorno Local
 
 El entorno local se gestiona con el script **`manage-env.sh`**, que automatiza todo el ciclo de vida del clúster y del GitHub Actions Runner.
 
@@ -78,7 +78,7 @@ Este comando realiza automáticamente:
 **URLs de acceso (una vez el entorno esté corriendo):**
 | Servicio | URL |
 |---|---|
-| 🌐 Frontend FTTH Dashboard | http://localhost:30080 |
+| Frontend FTTH Dashboard | http://localhost:30080 |
 | 📊 KubeView (visualización) | http://localhost:30088 |
 
 > **Nota sobre KubeView**: El chart de Helm está incluido en el repositorio bajo `deploy/helm-charts/kubeview`. No se requiere ningún paso adicional.

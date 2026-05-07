@@ -10,6 +10,8 @@ theme:
     - navigation.top
     - search.suggest
     - search.highlight
+    - toc.integrate
+    - content.code.copy
   palette:
     - scheme: default
       primary: indigo
