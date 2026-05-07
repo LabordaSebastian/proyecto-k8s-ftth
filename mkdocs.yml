@@ -5,7 +5,6 @@ site_author: Sebastian Laborda
 theme:
   name: material
   features:
-    - navigation.tabs
     - navigation.sections
     - navigation.top
     - toc.integrate
