@@ -26,6 +26,7 @@ theme:
 nav:
   - Inicio: index.md
   - Entorno Local: entorno.md
+  - CI/CD (GitHub Actions): github-actions.md
 
 markdown_extensions:
   - admonition
