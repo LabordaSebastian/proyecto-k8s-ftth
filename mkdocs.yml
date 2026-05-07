@@ -25,6 +25,7 @@ theme:
 
 nav:
   - Inicio: index.md
+  - Entorno Local: entorno.md
 
 markdown_extensions:
   - admonition
