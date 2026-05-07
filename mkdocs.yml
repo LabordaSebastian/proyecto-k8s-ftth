@@ -4,9 +4,6 @@ site_author: Sebastian Laborda
 
 theme:
   name: material
-  features:
-    - navigation.sections
-    - navigation.expand
   palette:
     - scheme: default
       primary: indigo
