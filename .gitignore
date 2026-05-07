@@ -15,3 +15,7 @@ kubeview-diag.yaml
 
 # Archivos de runtime generados por manage-env.sh (no versionar)
 .runner.pid
+
+# MkDocs
+site/
+
