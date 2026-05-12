@@ -1,5 +1,5 @@
 site_name: Proyecto FTTH - Kubernetes PoC
-site_description: Documentación oficial de la Prueba de Concepto de FTTH en Kubernetes.
+site_description: Documentación técnica del laboratorio de Kubernetes para la preparación de la certificación CKA.
 site_author: Sebastian Laborda
 
 theme:
@@ -12,6 +12,7 @@ theme:
     - search.highlight
     - toc.integrate
     - content.code.copy
+    - content.code.annotate
   palette:
     - scheme: default
       primary: indigo
@@ -26,18 +27,38 @@ theme:
         icon: material/brightness-4
         name: Cambiar a modo claro
 
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+
 nav:
   - Inicio: index.md
   - Getting Started:
       - getting-started/index.md
-      - kind-config.yaml: getting-started/kind-config.md
-      - manage-env.sh: getting-started/manage-env.md
+      - Infraestructura Local (Kind): getting-started/kind-config.md
+      - Script de Automatización: getting-started/manage-env.md
+  - Arquitectura:
+      - architecture/index.md
+      - Frontend (Nginx): architecture/frontend.md
+      - Backend (API Python): architecture/backend.md
+      - Base de Datos (Redis): architecture/redis.md
+      - Monitoreo de Red (CronJob): architecture/cronjob.md
+  - Manifiestos K8s:
+      - manifests/index.md
+      - Deployments: manifests/deployments.md
+      - Services: manifests/services.md
+      - ConfigMaps: manifests/configmaps.md
+      - Metrics Server: manifests/metrics-server.md
   - Operaciones (CI/CD):
       - operations/index.md
-      - ci-cd.yml: operations/ci-cd-pipeline.md
-      - docs.yml: operations/docs-pipeline.md
-
-markdown_extensions:
-  - admonition
-  - pymdownx.details
-  - pymdownx.superfences
+      - Pipeline de Despliegue: operations/ci-cd-pipeline.md
+      - Pipeline de Documentación: operations/docs-pipeline.md
