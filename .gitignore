@@ -1,4 +1,3 @@
-cat <<EOF > .gitignore
 # Archivos de intercambio de Vim
 *.swp
 *.swo
@@ -10,7 +9,7 @@ cat <<EOF > .gitignore
 # Si luego usas entornos virtuales de Python
 venv/
 __pycache__/
-EOF
+
 kubeview-diag.yaml
 
 # Archivos de runtime generados por manage-env.sh (no versionar)
@@ -19,3 +18,5 @@ kubeview-diag.yaml
 # MkDocs
 site/
 
+# IDE
+.vscode/
