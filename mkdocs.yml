@@ -62,3 +62,9 @@ nav:
       - operations/index.md
       - Pipeline de Despliegue: operations/ci-cd-pipeline.md
       - Pipeline de Documentación: operations/docs-pipeline.md
+  - Seguridad:
+      - security/index.md
+      - Cifrado en Reposo (etcd): security/encryption-at-rest.md
+  - Skills:
+      - skills/index.md
+      - Guía de Estilo de Documentación: skills/doc-style-guide.md
