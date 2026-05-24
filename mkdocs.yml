@@ -54,6 +54,7 @@ nav:
       - Monitoreo de Red (CronJob): architecture/cronjob.md
   - Harness Engineering:
       - harness-engineering/index.md
+      - Anatomía de los Agentes: harness-engineering/agents.md
   - Manifiestos K8s:
       - manifests/index.md
       - Deployments: manifests/deployments.md
