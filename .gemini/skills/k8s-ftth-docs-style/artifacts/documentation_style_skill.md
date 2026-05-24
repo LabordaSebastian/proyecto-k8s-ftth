@@ -1,8 +1,13 @@
 # Skill: Documentar el Proyecto FTTH-K8s
 
-> **USO**: Leer este archivo al inicio de cualquier tarea de documentación en el proyecto  
-> `LabordaSebastian/proyecto-k8s-ftth` (`/home/ing-laborda/Project_Kubernetes`)  
-> para producir documentación consistente sin inspeccionar archivos existentes.
+> **ROL**: Contexto primario de conocimiento del **Documentation Agent**.
+> Contiene las convenciones, plantillas y reglas de estilo.
+> El protocolo de activación y operación del agente está en:
+> `.gemini/skills/documentation-agent/artifacts/agent_protocol.md`
+>
+> **USO DIRECTO** (sin agente): Leer este archivo al inicio de cualquier tarea
+> de documentación en `LabordaSebastian/proyecto-k8s-ftth` para producir
+> documentación consistente sin inspeccionar archivos existentes.
 
 ---
 
