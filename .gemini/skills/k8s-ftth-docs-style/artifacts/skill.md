@@ -41,9 +41,12 @@ docs/
 ├── security/
 │   ├── index.md
 │   └── encryption-at-rest.md
-└── skills/
+├── skills/
+│   ├── index.md
+│   └── doc-style-guide.md
+└── tools/
     ├── index.md
-    └── doc-style-guide.md
+    └── codegraph.md
 ```
 
 ### Navegación en `mkdocs.yml`
@@ -295,6 +298,7 @@ Cuando el usuario diga "documenta X" o "agrega la doc de X", seguir este proceso
 | Nueva herramienta (Helm chart, script) | Crear página en `docs/getting-started/` si es prerequisito, o en `docs/architecture/` si es un componente |
 | Cambio al script `manage-env.sh` | Actualizar `docs/getting-started/manage-env.md` |
 | Hardening, RBAC, cifrado, auditoría, NetworkPolicy | Crear/actualizar página en `docs/security/` |
+| Herramienta auxiliar de desarrollo o IA | Crear/actualizar página en `docs/tools/` |
 
 ### Paso 2 — Construir la página
 

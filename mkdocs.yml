@@ -68,3 +68,6 @@ nav:
   - Skills:
       - skills/index.md
       - Guía de Estilo de Documentación: skills/doc-style-guide.md
+  - Herramientas:
+      - tools/index.md
+      - Codegraph: tools/codegraph.md
