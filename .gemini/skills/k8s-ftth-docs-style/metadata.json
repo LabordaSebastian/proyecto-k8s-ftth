@@ -15,6 +15,6 @@
     "mkdocs.yml"
   ],
   "artifacts": [
-    "skill.md"
+    "documentation_style_skill.md"
   ]
 }
