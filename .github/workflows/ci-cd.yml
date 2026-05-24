@@ -16,14 +16,31 @@ jobs:
     - name: 📥 Obtener el código fuente
       uses: actions/checkout@v4
 
-    - name: 🔨 Construir imagen de Backend localmente
+    - name: 🏷️ Calcular versión de imagen
+      id: version
       run: |
-        echo "Construyendo la imagen de Docker..."
-        docker build -t ftth-backend:latest ./src/backend
+        # Obtener último tag de git o usar v1 por defecto
+        LATEST_TAG=$(git tag -l 'v*' --sort=-version:refname --merged 2>/dev/null | head -1)
+        if [[ -z "$LATEST_TAG" ]]; then
+          NEW_VERSION="v1"
+        else
+          # Incrementar versión: v1 -> v2, v2 -> v3, etc.
+          VERSION_NUMBER=$(echo "$LATEST_TAG" | sed 's/v//')
+          NEW_VERSION="v$((VERSION_NUMBER + 1))"
+        fi
+        echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+        echo "Building image with tag: ${NEW_VERSION}"
+
+    - name: 🔨 Construir imagen de Backend con versión
+      run: |
+        echo "Construyendo la imagen de Docker con tag: ${{ steps.version.outputs.version }}"
+        docker build -t ftth-backend:${{ steps.version.outputs.version }} ./src/backend
+        docker tag ftth-backend:${{ steps.version.outputs.version }} ftth-backend:latest
 
     - name: 🚀 Cargar imagen en el clúster Kind
       run: |
         echo "Inyectando la imagen en los nodos de Kubernetes..."
+        kind load docker-image ftth-backend:${{ steps.version.outputs.version }} --name ftth-cluster
         kind load docker-image ftth-backend:latest --name ftth-cluster
 
     - name: ☸️ Aplicar manifiestos de Kubernetes
@@ -34,7 +51,14 @@ jobs:
         kubectl apply -f k8s/03-deployments/
         kubectl apply -f k8s/05-services/
 
-    - name: ✅ Verificar estado
+    - name: ⏳ Validar que deployments están ready
+      run: |
+        echo "Esperando a que los deployments estén listos..."
+        kubectl rollout status deployment/ftth-backend --timeout=5m
+        kubectl rollout status deployment/ftth-frontend --timeout=5m
+        echo "✅ Todos los deployments están ready"
+
+    - name: ✅ Verificar estado final
       run: |
         echo "Estado actual de los Pods:"
         kubectl get pods

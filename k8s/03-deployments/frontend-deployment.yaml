@@ -10,29 +10,54 @@ spec:
   selector:
     matchLabels: 
       app: ftth-frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   template:
     metadata:
       labels:
         app: ftth-frontend
     spec:
-      containers:
-      - name: nginx-web
-        image: nginx:alpine
-        ports:
-        - containerPort: 80
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
-      # --- Montamos el volumen en la ruta de Nginx ---
-        volumeMounts:
-        - name: html-volume
-          mountPath: /usr/share/nginx/html
-      # --- Definimos de dónde sale el volumen ---
-      volumes:
-      - name: html-volume
-        configMap:
-          name: ftth-dashboard-html
+       containers:
+       - name: nginx-web
+         image: nginx:alpine
+         ports:
+         - containerPort: 80
+         resources:
+           requests:
+             memory: "64Mi"
+             cpu: "50m"
+           limits:
+             memory: "128Mi"
+             cpu: "100m"
+         readinessProbe:
+           httpGet:
+             path: /
+             port: 80
+           initialDelaySeconds: 5
+           periodSeconds: 10
+           timeoutSeconds: 2
+           failureThreshold: 3
+         livenessProbe:
+           httpGet:
+             path: /
+             port: 80
+           initialDelaySeconds: 15
+           periodSeconds: 20
+           timeoutSeconds: 2
+           failureThreshold: 3
+         lifecycle:
+           preStop:
+             exec:
+               command: ["/bin/sh", "-c", "sleep 30"]
+       # --- Montamos el volumen en la ruta de Nginx ---
+         volumeMounts:
+         - name: html-volume
+           mountPath: /usr/share/nginx/html
+       # --- Definimos de dónde sale el volumen ---
+       volumes:
+       - name: html-volume
+         configMap:
+           name: ftth-dashboard-html

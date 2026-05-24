@@ -16,6 +16,7 @@ El flujo de datos es el siguiente:
 ```mermaid
 sequenceDiagram
     actor CronJob as CronJob (busybox)
+    participant K8s as K8s Scheduler
     participant BE as Backend Pod<br/>(Python :5000)
     participant SVC as ftth-backend-service<br/>(ClusterIP)
     participant Redis as Redis Pod<br/>(:6379)
@@ -25,6 +26,12 @@ sequenceDiagram
     BE->>Redis: cache.ping() via ENV REDIS_HOST
     Redis-->>BE: PONG
     BE-->>CronJob: 200 OK {"status": "OK", "ftth_network": "Online"}
+
+    K8s->>BE: readinessProbe GET /health cada 10s
+    K8s->>BE: livenessProbe GET /health cada 20s
+    BE->>Redis: cache.ping()
+    Redis-->>BE: PONG
+    BE-->>K8s: 200 {"status": "healthy", "redis": true}
 ```
 
 ---
@@ -60,6 +67,14 @@ def status():
             "ftth_network": "Offline"
         }), 500
 
+@app.route('/health')
+def health():
+    try:
+        cache.ping()
+        return jsonify({"status": "healthy", "redis": True}), 200
+    except redis.ConnectionError:
+        return jsonify({"status": "unhealthy", "redis": False}), 503
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
 ```
@@ -80,6 +95,12 @@ Este patrón permite que la misma imagen Docker funcione en cualquier entorno:
 
 !!! info "Cómo funciona el DNS interno de Kubernetes"
     Cuando se crea un Service llamado `ftth-redis-service` en el namespace `default`, el componente `CoreDNS` del clúster registra automáticamente ese nombre. Cualquier Pod dentro del clúster puede resolver `ftth-redis-service` como si fuera un hostname de internet, sin necesidad de conocer la IP del Pod (que es efímera y cambia con cada reinicio). Este es el mecanismo de **Service Discovery** nativo de Kubernetes.
+
+#### ¿Por qué el endpoint `/health`?
+
+A diferencia del endpoint `/status` (orientado al CronJob para reportar estado de red), el endpoint `/health` está diseñado exclusivamente para las **probes de Kubernetes**. Es el contrato entre el Deployment y el orquestador: si responde HTTP 200, el Pod está sano; si responde 503 (Redis caído), Kubernetes lo considera no saludable.
+
+La separación de endpoints evita que las probes y el monitoreo de red compartan la misma ruta, permitiendo que cada consumidor tenga su propio contrato.
 
 #### ¿Por qué `host='0.0.0.0'` en Flask?
 
@@ -125,6 +146,11 @@ spec:
   selector:
     matchLabels:
       app: ftth-backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   template:
     metadata:
       labels:
@@ -146,6 +172,26 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "100m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          timeoutSeconds: 2
+          failureThreshold: 3
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 30"]
 ```
 
 #### `imagePullPolicy: Never` — La clave para entornos Kind
@@ -209,6 +255,74 @@ resources:
 Flask es un framework ligero de Python. En condiciones normales de este laboratorio (pocas peticiones, lógica simple), `64Mi` de memoria y `50m` de CPU son suficientes para que el proceso Python arranque y opere establemente.
 
 El límite de `128Mi` actúa como protección: si por alguna razón la API tuviera un memory leak, el kernel terminaría el proceso (`OOMKilled`) antes de que afecte a otros Pods del nodo.
+
+#### `strategy` — RollingUpdate con `maxUnavailable: 0`
+
+```yaml
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+```
+
+Esta configuración es la clave del **zero-downtime deployment**. `maxUnavailable: 0` le dice a Kubernetes: "no mates ningún pod viejo hasta que el nuevo esté listo". `maxSurge: 1` permite tener un pod extra durante la transición. Con 2 réplicas, el flujo es:
+
+1. K8s crea un nuevo Pod (total: 3 pods — 2 viejos + 1 nuevo)
+2. Espera a que la readinessProbe del nuevo responda HTTP 200
+3. Recién entonces termina un Pod viejo
+4. Repite hasta reemplazar los 2 pods
+
+#### `readinessProbe` y `livenessProbe` — Health checks automáticos
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 5000
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 3
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 5000
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 2
+  failureThreshold: 3
+```
+
+| Probe | Endpoint | `initialDelaySeconds` | `periodSeconds` | Consecuencia del fallo |
+|---|---|---|---|---|
+| `readiness` | `GET /health` | 5s | 10s | Se quita del Service (no recibe tráfico) |
+| `liveness` | `GET /health` | 15s | 20s | K8s reinicia el Pod |
+
+El endpoint `/health` verifica que Flask responda **y** que Redis sea accesible. Si Redis está caído, la probe falla y el Pod se aísla automáticamente sin intervención manual.
+
+#### `lifecycle.preStop` — Graceful shutdown
+
+```yaml
+lifecycle:
+  preStop:
+    exec:
+      command: ["/bin/sh", "-c", "sleep 30"]
+```
+
+Cuando Kubernetes decide terminar un Pod (por Rolling Update, drenado de nodo, etc.), el flujo es:
+
+1. El Pod pasa a estado `Terminating`
+2. Se ejecuta el hook `preStop` (este `sleep 30`)
+3. Se envía `SIGTERM` al proceso principal (Flask)
+4. Kubernetes espera `terminationGracePeriodSeconds` (default 30s)
+5. Si el proceso no terminó, envía `SIGKILL`
+
+El `sleep 30` dentro del preStop retrasa el paso 3, dando tiempo a que kube-proxy en todos los nodos actualice sus reglas de iptables/IPVS y dejen de enrutar tráfico al Pod saliente. Sin este retraso, las conexiones en curso recibirían un RST.
+
+!!! warning "`sleep 30` = `terminationGracePeriodSeconds`"
+    El duración total del graceful shutdown es `preStop (30s)` + `terminationGracePeriodSeconds (30s)` = hasta 60s. Esto es deliberado para entornos de laboratorio. En producción, se usaría `nginx -s quit` o `kill -SIGTERM` en lugar del sleep.
 
 ---
 
@@ -279,7 +393,27 @@ kubectl get pods -l app=ftth-backend -o wide
 kubectl get endpoints ftth-backend-service
 ```
 
-### Probar el endpoint `/status` desde dentro del clúster
+### Probar el endpoint `/health` (health check)
+
+Desde el host local usando port-forward:
+
+```bash
+kubectl port-forward svc/ftth-backend-service 5000:5000
+```
+
+```bash
+curl -v http://localhost:5000/health
+```
+
+Respuesta esperada:
+
+```json
+{"redis": true, "status": "healthy"}
+```
+
+HTTP 200 si Redis responde, HTTP 503 si Redis está caído.
+
+### Probar el endpoint `/status` (monitoreo de red) desde dentro del clúster
 
 Dado que el Service es ClusterIP, no es accesible desde el host directamente. Para probarlo, lanza un Pod temporal con `curl` instalado:
 

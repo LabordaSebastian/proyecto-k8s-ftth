@@ -1,6 +1,6 @@
 # Pipeline de Despliegue Local (ci-cd.yml)
 
-Este flujo simula una canalización de **Integración y Despliegue Continuos (CI/CD)**. La magia de este flujo es que no se ejecuta en los servidores en la nube de GitHub, sino que se conecta a nuestro **Runner local** (que levantamos con nuestro script `manage-env.sh`) y ejecuta los comandos directamente en nuestra PC.
+Este flujo simula una canalización de **Integración y Despliegue Continuos (CI/CD)**. Se ejecuta en el **Runner local** (levantado por `manage-env.sh`), no en los servidores de GitHub.
 
 ```yaml
 name: FTTH CI/CD Pipeline
@@ -18,32 +18,53 @@ jobs:
 
     steps:
     # 3. Checkout del código
-    - name: Obtener el código fuente
+    - name: 📥 Obtener el código fuente
       uses: actions/checkout@v4
 
-    # 4. Construcción de la Imagen
-    - name: Construir imagen de Backend localmente
+    # 4. Versionado automático
+    - name: 🏷️ Calcular versión de imagen
+      id: version
       run: |
-        echo "Construyendo la imagen de Docker..."
-        docker build -t ftth-backend:latest ./src/backend
+        LATEST_TAG=$(git tag -l 'v*' --sort=-version:refname --merged 2>/dev/null | head -1)
+        if [[ -z "$LATEST_TAG" ]]; then
+          NEW_VERSION="v1"
+        else
+          VERSION_NUMBER=$(echo "$LATEST_TAG" | sed 's/v//')
+          NEW_VERSION="v$((VERSION_NUMBER + 1))"
+        fi
+        echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+        echo "Building image with tag: ${NEW_VERSION}"
 
-    # 5. Inyección en el clúster Kind
-    - name: Cargar imagen en el clúster Kind
+    # 5. Construcción + dual tagging
+    - name: 🔨 Construir imagen de Backend con versión
       run: |
-        echo "Inyectando la imagen en los nodos de Kubernetes..."
+        docker build -t ftth-backend:${{ steps.version.outputs.version }} ./src/backend
+        docker tag ftth-backend:${{ steps.version.outputs.version }} ftth-backend:latest
+
+    # 6. Inyección en el clúster Kind
+    - name: 🚀 Cargar imagen en el clúster Kind
+      run: |
+        kind load docker-image ftth-backend:${{ steps.version.outputs.version }} --name ftth-cluster
         kind load docker-image ftth-backend:latest --name ftth-cluster
 
-    # 6. Despliegue en Kubernetes
-    - name: Aplicar manifiestos de Kubernetes
+    # 7. Despliegue en Kubernetes
+    - name: ☸️ Aplicar manifiestos de Kubernetes
       run: |
-        echo "Desplegando la infraestructura declarativa..."
         kubectl apply -f k8s/01-namespaces-rbac/ || true
         kubectl apply -f k8s/02-storage/
         kubectl apply -f k8s/03-deployments/
         kubectl apply -f k8s/05-services/
 
-    # 7. Verificación
-    - name: Verificar estado
+    # 8. Post-deploy validation
+    - name: ⏳ Validar que deployments están ready
+      run: |
+        echo "Esperando a que los deployments estén listos..."
+        kubectl rollout status deployment/ftth-backend --timeout=5m
+        kubectl rollout status deployment/ftth-frontend --timeout=5m
+        echo "✅ Todos los deployments están ready"
+
+    # 9. Verificación final
+    - name: ✅ Verificar estado final
       run: |
         echo "Estado actual de los Pods:"
         kubectl get pods
@@ -51,10 +72,25 @@ jobs:
 
 ### Explicación sección por sección:
 
-1. **`on: push: branches: [main]`**: Este es el "gatillo". El pipeline solo se dispara automáticamente cuando hacemos un `git push` a la rama `main`.
-2. **`runs-on: self-hosted`**: Es la configuración más importante. Le dice a GitHub: *"No uses tus servidores, busca una computadora registrada con la etiqueta 'self-hosted' y ejecuta esto allí"*. Esa computadora es tu propia PC gracias al Runner en segundo plano.
-3. **Checkout**: Descarga la última versión de tu código desde GitHub al entorno de ejecución (tu PC).
-4. **Construcción de la Imagen**: Ejecuta `docker build` en tu PC usando el Dockerfile de la carpeta `./src/backend`.
-5. **Inyección en Kind**: Dado que Kind usa sus propios nodos virtuales y no puede acceder al registro local de Docker de tu PC, usamos el comando `kind load` para "empujar" la imagen recién construida directamente al clúster, evitando el temido error `ErrImageNeverPull`.
-6. **Despliegue en Kubernetes**: Aplica (o actualiza) los archivos YAML al clúster usando `kubectl apply`. Observa el `|| true` en la carpeta `01` para que no falle si el namespace ya existía.
-7. **Verificación**: Un simple comando final para imprimir la lista de Pods en los registros (logs) de GitHub Actions.
+1. **`on: push: branches: [main]`**: Gatillo. El pipeline se dispara automáticamente al hacer `git push` a `main`.
+2. **`runs-on: self-hosted`**: Configuración clave. Le dice a GitHub que ejecute los comandos en tu PC, no en sus servidores.
+3. **Checkout**: Descarga el código fuente desde GitHub al Runner local.
+4. **Versionado automático**: Calcula el próximo tag de imagen basándose en los tags de git existentes. Si el último tag es `v2`, la nueva imagen se etiqueta como `v3`. En la primera ejecución (sin tags), usa `v1`.
+5. **Construcción + dual tagging**: Construye la imagen con el tag semántico (`ftth-backend:v3`) y también la etiqueta como `:latest` para mantener compatibilidad con el manifiesto del Deployment.
+6. **Inyección en Kind**: Carga ambas etiquetas en los nodos del clúster Kind. Sin este paso, las imágenes locales no serían accesibles.
+7. **Despliegue en Kubernetes**: Aplica los manifiestos con `kubectl apply`. El `|| true` en `01-namespaces-rbac/` evita que falle si el namespace ya existe.
+8. **Post-deploy validation**: Usa `kubectl rollout status` para esperar hasta que los Deployments estén completamente listos (timeout de 5 minutos). Si el rollout falla, el pipeline se marca como fallido. Esto garantiza que no se despliegue una versión rota.
+9. **Verificación final**: Imprime el estado de todos los Pods como resumen en los logs.
+
+### ¿Por qué versionado semántico con git tags?
+
+| Beneficio | Descripción |
+|---|---|
+| **Trazabilidad** | Cada versión de imagen se corresponde con un commit y un tag de git |
+| **Rollback** | Se puede revertir a una versión anterior directamente por tag |
+| **Historial** | `kubectl rollout history` muestra el change-cause con el tag usado |
+| **Consistencia** | El tag en el Deployment (ej: `ftth-backend:v3`) coincide con el tag de git |
+
+### ¿Por qué dual tagging (`vX` + `latest`)?
+
+`latest` permite que el manifiesto `backend-deployment.yaml` (que referencia `ftth-backend:v1`) funcione sin cambios para el primer despliegue local. El tag semántico (`vX`) proporciona trazabilidad para rolling updates en CI/CD. En producción, solo se usaría el tag semántico.

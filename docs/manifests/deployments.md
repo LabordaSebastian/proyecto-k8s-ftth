@@ -5,11 +5,12 @@ Esta sección documenta todos los recursos de tipo `Deployment` y `CronJob` ubic
 ## Resumen de Workloads
 
 | Archivo | Nombre | Réplicas | Imagen | Tipo |
-|---|---|---|---|---|
+|---|---|---|---|---|---|
 | `frontend-deployment.yaml` | `ftth-frontend` | 2 | `nginx:alpine` | Deployment |
 | `backend-deployment.yaml` | `ftth-backend` | 2 | `ftth-backend:v1` (local) | Deployment |
 | `redis-deployment.yaml` | `ftth-redis` | 1 | `redis:alpine` | Deployment |
 | `network-checker-cronjob.yaml` | `ftth-network-checker` | N/A | `busybox:latest` | CronJob |
+| `pod-disruption-budgets.yaml` | `ftth-backend-pdb`, `ftth-frontend-pdb` | N/A | N/A | PodDisruptionBudget |
 
 !!! tip "Para la documentación detallada de cada componente"
     Esta sección es una referencia rápida de los manifiestos. Para el desglose arquitectónico completo (por qué se tomó cada decisión de diseño), consulta la sección [Arquitectura](../architecture/index.md).
@@ -33,6 +34,11 @@ spec:
   selector:
     matchLabels:
       app: ftth-frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   template:
     metadata:
       labels:
@@ -50,6 +56,26 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "100m"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          timeoutSeconds: 2
+          failureThreshold: 3
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 30"]
         volumeMounts:
         - name: html-volume
           mountPath: /usr/share/nginx/html
@@ -64,6 +90,25 @@ spec:
 - **`replicas: 2`** — Alta disponibilidad. Si un Pod falla, el otro continúa sirviendo tráfico mientras el Deployment crea el reemplazo.
 - **`image: nginx:alpine`** — Imagen pública. Usa `IfNotPresent` por defecto (no declarado explícitamente).
 - **Volumen desde ConfigMap** — El HTML del dashboard se inyecta en `/usr/share/nginx/html` sin necesidad de reconstruir la imagen. Ver [Frontend (Nginx)](../architecture/frontend.md) para más detalles.
+
+#### `maxSurge: 1` y `maxUnavailable: 0` — Rolling Update sin downtime
+
+Esta estrategia garantiza que **siempre haya al menos 2 pods sirviendo tráfico** durante una actualización. `maxUnavailable: 0` impide que K8s mate pods viejos antes de que los nuevos estén listos. Combinado con `maxSurge: 1`, el Deployment crea 1 pod extra, espera a que pase la readiness probe, y recién entonces termina el pod viejo.
+
+#### `readinessProbe` — El semáforo de tráfico
+
+Kubernetes no envía tráfico del Service a un Pod hasta que la readiness probe responde HTTP 200. Durante un Rolling Update, el nuevo Pod solo recibe tráfico cuando Nginx está listo para servir. Si la probe falla, el pod se marca como `NotReady` y el Service lo excluye automáticamente.
+
+#### `lifecycle.preStop` — La llave para conexiones gracefully
+
+```yaml
+command: ["/bin/sh", "-c", "sleep 30"]
+```
+
+Cuando K8s decide terminar un Pod, el orden es: (1) ejecuta `preStop`, (2) envía `SIGTERM`, (3) espera `terminationGracePeriodSeconds` (default 30s), (4) envía `SIGKILL`. Este `sleep 30` dentro del preStop retrasa la `SIGTERM` 30 segundos adicionales, dando tiempo a que el balanceador de carga (kube-proxy) actualice sus reglas y deje de enrutar tráfico al Pod que se va a morir. Sin esto, algunas conexiones en curso recibirían un RST (reset) y el usuario vería un error.
+
+!!! warning "`sleep 30` es un patrón de laboratorio"
+    En producción se usa un hook `preStop` que envía una señal real de graceful shutdown a Nginx (`nginx -s quit`). El `sleep` es un atajo válido para este entorno local.
 
 ---
 
@@ -84,6 +129,11 @@ spec:
   selector:
     matchLabels:
       app: ftth-backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   template:
     metadata:
       labels:
@@ -105,6 +155,26 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "100m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          timeoutSeconds: 2
+          failureThreshold: 3
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 30"]
 ```
 
 **Decisiones clave:**
@@ -113,12 +183,74 @@ spec:
 - **Variable de entorno `REDIS_HOST`** — Inyecta la dirección del Service de Redis. La API Python la consume via `os.getenv()`, desacoplando el código de la infraestructura.
 - **`replicas: 2`** — La API es stateless, puede escalar horizontalmente sin coordinación entre réplicas.
 
+#### `readinessProbe` vs `livenessProbe` — Dos tipos de health check
+
+| Probe | Endpoint | Propósito |
+|---|---|---|
+| `readinessProbe` | `GET /health` | Solo decide si el Pod recibe tráfico |
+| `livenessProbe` | `GET /health` | Decide si K8s debe reiniciar el Pod |
+
+Ambas apuntan al mismo endpoint `/health` implementado en `app.py`, que verifica que la app responde HTTP 200 **y** que Redis es accesible (retorna 503 si Redis está caído). La diferencia está en la acción: la `readiness` aísla el Pod del Service, la `liveness` fuerza un reinicio.
+
+!!! tip "`failureThreshold` — Tolerancia a fallos transitorios"
+    `failureThreshold: 3` significa que Kubernetes necesita 3 fallos consecutivos (30 segundos) antes de considerar el Pod como no saludable. Esto evita falsos positivos por latencias de red momentáneas.
+
+#### `lifecycle.preStop` — Graceful shutdown
+
+```yaml
+command: ["/bin/sh", "-c", "sleep 30"]
+```
+
+El `sleep 30` dentro del hook `preStop` retrasa el envío de `SIGTERM` al proceso Flask, dando tiempo a que el Service de Kubernetes actualice sus endpoints (iptables/ipvs) y deje de enviar tráfico al Pod saliente. Sin este hook, las peticiones en curso recibirían un `Connection refused` o timeout.
+
 !!! warning "Prerrequisito antes de aplicar este Deployment"
     La imagen `ftth-backend:v1` debe estar construida e inyectada en Kind **antes** de aplicar este manifiesto:
     ```bash
     docker build -t ftth-backend:v1 ./src/backend/
     kind load docker-image ftth-backend:v1 --name ftth-cluster
     ```
+
+---
+
+## PodDisruptionBudgets
+
+**Archivo:** `k8s/03-deployments/pod-disruption-budgets.yaml`
+
+```yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ftth-backend-pdb
+  namespace: default
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: ftth-backend
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ftth-frontend-pdb
+  namespace: default
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: ftth-frontend
+```
+
+**Decisiones clave:**
+
+- **`minAvailable: 1`** — Garantiza que al menos 1 Pod de cada Deployment esté siempre disponible, incluso durante operaciones de drenado de nodos o disruptiones voluntarias.
+- **Afecta solo disruptiones voluntarias** — No protege contra fallos de nodo, OOMKilled, o crashes del Pod. Solo aplica cuando el cluster decide terminar pods proactivamente (ej: `kubectl drain`, `kubectl delete pod`, actualizaciones de nodo).
+
+#### ¿Por qué `minAvailable: 1` y no `maxUnavailable`?
+
+Ambos son equivalentes cuando hay 2 réplicas (`minAvailable: 1` = `maxUnavailable: 1`). Se eligió `minAvailable` porque expresa mejor la intención: "siempre quiero al menos un Pod sirviendo", en lugar de "puedo tolerar perder uno". Es semánticamente más claro para un laboratorio de estudio CKA.
+
+!!! info "PDB + RollingUpdate = protección en capas"
+    El RollingUpdate con `maxUnavailable: 0` protege durante las actualizaciones. El PDB con `minAvailable: 1` protege durante operaciones administrativas (drenado de nodo, borrado manual). Juntos cubren todos los escenarios de interrupción controlada.
 
 ---
 
@@ -291,29 +423,93 @@ kubectl top pods
 kubectl top nodes
 ```
 
-### Rolling Update sin downtime
+### Rolling Update — Zero-downtime
 
-Para actualizar la imagen del Backend a una nueva versión:
+La estrategia `maxUnavailable: 0` + `maxSurge: 1` combinada con probes y preStop garantiza **cero downtime** durante las actualizaciones.
+
+Para actualizar el Backend a una nueva versión:
 
 ```bash
 # 1. Construir la nueva versión
-docker build -t ftth-backend:v2 ./src/backend/
+BACKEND_VERSION=v2 ./manage-env.sh up
 
-# 2. Inyectarla en Kind
+# O manualmente:
+docker build -t ftth-backend:v2 ./src/backend/
 kind load docker-image ftth-backend:v2 --name ftth-cluster
 
-# 3. Actualizar el Deployment (estrategia RollingUpdate por defecto)
+# 2. Hacer el Rolling Update (nombre del container: python-api)
 kubectl set image deployment/ftth-backend python-api=ftth-backend:v2
 
-# 4. Monitorear el progreso del rollout
-kubectl rollout status deployment/ftth-backend
+# 3. Registrar el cambio en el historial (reemplaza a --record, deprecated)
+kubectl annotate deployment/ftth-backend \
+  kubernetes.io/change-cause="Actualización a v2" \
+  --overwrite
+
+# 4. Monitorear el progreso
+kubectl rollout status deployment/ftth-backend --timeout=5m
+
+# 5. Verificar el historial de revisiones
+kubectl rollout history deployment/ftth-backend
+```
+
+!!! warning "`--record` está deprecated en K8s 1.29+"
+    Usar `kubectl annotate kubernetes.io/change-cause` en su lugar. Sin este paso, el rollout history mostrará `<none>` como change-cause.
+
+Para simular un Rolling Update sin cambiar de imagen (útil para probar el mecanismo):
+
+```bash
+# Forzar un cambio en el template del Pod
+kubectl set env deployment/ftth-backend DEPLOY_TIMESTAMP=$(date +%s)
+kubectl annotate deployment/ftth-backend \
+  kubernetes.io/change-cause="Trigger zero-downtime test" \
+  --overwrite
+```
+
+#### Monitorear en vivo
+
+```bash
+# Terminal 1: Ver progreso de pods
+kubectl get pods -w -l app=ftth-backend
+
+# Terminal 2: Verificar que NO hay downtime
+while true; do
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:30080 2>/dev/null)
+  if [ "$HTTP_CODE" = "200" ]; then
+    echo "✅ $(date +%H:%M:%S) - HTTP $HTTP_CODE"
+  else
+    echo "❌ $(date +%H:%M:%S) - HTTP $HTTP_CODE - DOWNTIME!"
+  fi
+  sleep 0.5
+done
+```
+
+Output esperado durante un Rolling Update exitoso:
+
+```
+✅ 20:46:43 - HTTP 200
+✅ 20:46:44 - HTTP 200
+✅ 20:46:44 - HTTP 200
+... (nunca aparece ❌)
 ```
 
 ### Revertir a la versión anterior
 
 ```bash
+# Opción 1: Script automático (recomendado)
+./scripts/rollback.sh
+
+# Opción 2: Manual
 kubectl rollout undo deployment/ftth-backend
+kubectl annotate deployment/ftth-backend \
+  kubernetes.io/change-cause="Rollback manual" \
+  --overwrite
+kubectl rollout status deployment/ftth-backend --timeout=5m
 ```
+
+El script `scripts/rollback.sh` automatiza el proceso completo: revierte ambos deployments (Backend y Frontend), espera a que los rollouts terminen, valida que los endpoints respondan, y muestra el historial antes y después.
+
+!!! tip "Requisito: al menos 2 revisiones en el historial"
+    Para hacer rollback debe haber al menos 2 revisiones en `kubectl rollout history`. Si solo hay 1 (el deployment nunca se modificó), el script lo detecta y muestra un mensaje claro. En ese caso, primero hacé un cambio como se describe arriba.
 
 ### Escalar un Deployment manualmente
 

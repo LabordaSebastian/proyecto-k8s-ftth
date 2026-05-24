@@ -16,7 +16,10 @@ set -euo pipefail
 # ------------------------------------------------------------------------------
 CLUSTER_NAME="ftth-cluster"
 KIND_CONFIG="kind-config.yaml"
-BACKEND_IMAGE="ftth-backend:v1"
+# Image versioning strategy: Use git tags or increment version
+# Format: ftth-backend:vX where X is version number
+BACKEND_VERSION="${BACKEND_VERSION:-v1}"  # Can be overridden: BACKEND_VERSION=v2 ./manage-env.sh up
+BACKEND_IMAGE="ftth-backend:${BACKEND_VERSION}"
 BACKEND_SRC="./src/backend/"
 MANIFESTS_DIR="k8s/"
 RUNNER_DIR="${HOME}/actions-runner"

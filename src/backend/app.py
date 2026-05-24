@@ -8,6 +8,15 @@ app = Flask(__name__)
 redis_host = os.getenv("REDIS_HOST", "ftth-redis-service")
 cache = redis.Redis(host=redis_host, port=6379, db=0, decode_responses=True)
 
+@app.route('/health')
+def health():
+    """Health check endpoint for Kubernetes probes (readiness + liveness)"""
+    try:
+        cache.ping()
+        return jsonify({"status": "healthy", "redis": True}), 200
+    except redis.ConnectionError:
+        return jsonify({"status": "unhealthy", "redis": False}), 503
+
 @app.route('/status')
 def status():
     try:
