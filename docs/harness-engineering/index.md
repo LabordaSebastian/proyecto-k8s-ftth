@@ -51,7 +51,7 @@ Evita que el usuario tenga que decidir qué agente usar en cada paso. El Orquest
 A diferencia de los agentes técnicos que corren en paralelo proponiendo soluciones, la documentación es una consecuencia de esas soluciones. El Documentation Agent actúa como un *hook* final, garantizando que el conocimiento del proyecto (`docs/`) nunca quede desactualizado respecto al código.
 
 !!! info "Fase actual de implementación"
-    El proyecto ya ha inicializado formalmente a los agentes y separado sus dominios en `.gemini/skills/`. Esto provee una base firme y reglas claras para que la IA colabore sin romper el estilo del código o de la infraestructura.
+    El proyecto ya ha inicializado formalmente a los agentes y separado sus dominios en `.gemini/skills/` para Gemini (Antygravity) y `.opencode/skills/` para opencode. Los skills de opencode son "thin" y referencian el contenido de `.gemini/skills/` como fuente de verdad única. Esto provee una base firme, reglas claras y sincronización automática entre plataformas para que la IA colabore sin romper el estilo del código o de la infraestructura.
 
 ---
 
@@ -72,12 +72,22 @@ A diferencia de los agentes técnicos que corren en paralelo proponiendo solucio
 
 Para inspeccionar la configuración y los contratos de cada agente, se pueden consultar sus protocolos individuales:
 
+**Gemini (Antygravity):**
 ```bash
 # Ver el protocolo de operación del Infrastructure Agent
 cat .gemini/skills/infrastructure-agent/artifacts/agent_protocol.md
 
 # Ver la knowledge base del Application Agent
 cat .gemini/skills/application-agent/artifacts/app_skill.md
+```
+
+**opencode:**
+```bash
+# Ver el skill de infraestructura (thin que referencias a .gemini/)
+cat .opencode/skills/infrastructure/SKILL.md
+
+# Ver las instrucciones del orquestador
+cat AGENTS.md
 ```
 
 ### Debugging
