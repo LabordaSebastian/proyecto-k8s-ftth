@@ -2,19 +2,14 @@
 
 ## Visión General
 
-Esta página desglosa la definición interna, rol, contexto asignado y protocolos de activación de cada uno de los agentes que componen la arquitectura de Harness Engineering del proyecto. Cada agente tiene un diseño interno (`metadata.json`, `agent_protocol.md` y `knowledge_base.md`) que asegura su bounded context.
+El sistema Harness Engineering del proyecto está compuesto por 6 agentes especializados, cada uno con un contexto acotado y un protocolo de comunicación claro. Estos agentes están implementados para dos plataformas:
 
-| Recurso | Nombre | Propósito |
+| Plataforma | Configuración | Formato |
 |---|---|---|
-| `Agente` | `Orquestador` | Coordina a los subagentes (Punto de entrada). |
-| `Agente` | `Infrastructure` | Especialista en recursos declarativos K8s. |
-| `Agente` | `Application` | Especialista en código fuente (Python, Nginx). |
-| `Agente` | `CI/CD` | Especialista en automatización y scripts de ciclo de vida. |
-| `Agente` | `Validation` | Tester en runtime contra el clúster vivo. |
-| `Agente` | `Documentation` | Hook de actualización de documentación MkDocs. |
+| **Antygravity** (Gemini) | `.gemini/skills/` | `metadata.json` + `agent_protocol.md` + `*_skill.md` |
+| **opencode** | `.opencode/skills/` + `AGENTS.md` + `opencode.json` | `SKILL.md` (thin → referencia a `.gemini/skills/`) |
 
-!!! info "Implementación dual"
-    Cada agente está implementado para dos plataformas: **Gemini** (Antygravity) via `.gemini/skills/` y **opencode** via `.opencode/skills/`. Los skills de opencode son "thin" — su contenido instruye leer los archivos fuente de `.gemini/skills/`, garantizando que el conocimiento de dominio sea siempre el mismo sin importar la plataforma.
+Independientemente de la plataforma, los agentes son los mismos, tienen el mismo rol y siguen el mismo flujo de trabajo.
 
 ---
 
@@ -28,7 +23,6 @@ Es el **Router + Coordinador**. Es el único agente que interactúa directamente
 #### Contexto y Archivos Asignados
 - **Dominio**: Repositorio completo (visión de alto nivel estructural).
 - **Archivos clave**: `README.md`, `mkdocs.yml`, y el mapa del repo `.codegraph.db`.
-- **opencode (Orquestador)**: `AGENTS.md` (instrucciones del sistema) + `opencode.json` (config raíz)
 
 #### Activación
 - **Trigger**: Siempre activo al recibir un mensaje del usuario.
@@ -46,9 +40,6 @@ Especialista en **manifiestos de Kubernetes**. Valida la coherencia de los archi
 
 #### Contexto y Archivos Asignados
 - **Dominio**: `k8s/` y la configuración de Kind (`kind-config.yaml`).
-- **Conocimiento Base**: `.gemini/skills/infrastructure-agent/artifacts/infra_skill.md`
-- **Protocolo**: `.gemini/skills/infrastructure-agent/artifacts/agent_protocol.md`
-- **opencode Skill**: `.opencode/skills/infrastructure/SKILL.md` (thin → lee los archivos de `.gemini/skills/infrastructure-agent/artifacts/`)
 
 #### Activación
 - **Trigger**: "Necesito un nuevo microservicio", "Faltan limits de CPU", "Exponer un puerto".
@@ -63,9 +54,6 @@ Especialista en **código fuente**. Conoce profundamente la lógica del Backend 
 
 #### Contexto y Archivos Asignados
 - **Dominio**: `src/`
-- **Conocimiento Base**: `.gemini/skills/application-agent/artifacts/app_skill.md`
-- **Protocolo**: `.gemini/skills/application-agent/artifacts/agent_protocol.md`
-- **opencode Skill**: `.opencode/skills/application/SKILL.md` (thin → lee los archivos de `.gemini/skills/application-agent/artifacts/`)
 
 #### Activación
 - **Trigger**: "Agregar endpoint `/health`", "Actualizar la librería de Redis", "Mejorar las capas del Dockerfile".
@@ -80,9 +68,6 @@ Especialista en **automatización**. Garantiza que cualquier cambio en código o
 
 #### Contexto y Archivos Asignados
 - **Dominio**: `.github/workflows/` y el script de bootstrap `manage-env.sh`.
-- **Conocimiento Base**: `.gemini/skills/cicd-agent/artifacts/cicd_skill.md`
-- **Protocolo**: `.gemini/skills/cicd-agent/artifacts/agent_protocol.md`
-- **opencode Skill**: `.opencode/skills/cicd/SKILL.md` (thin → lee los archivos de `.gemini/skills/cicd-agent/artifacts/`)
 
 #### Activación
 - **Trigger**: "El pipeline de build falla", "Agregar el microservicio nuevo a manage-env.sh".
@@ -97,9 +82,6 @@ Verificador en **runtime**. Es el único agente diseñado para ejecutar comandos
 
 #### Contexto y Archivos Asignados
 - **Dominio**: Comandos `kubectl` y `curl` contra `ftth-cluster`.
-- **Protocolo**: `.gemini/skills/validation-agent/artifacts/agent_protocol.md`
-- **opencode Skill**: `.opencode/skills/validation/SKILL.md` (thin → lee el protocolo de `.gemini/skills/validation-agent/artifacts/`)
-- **⚠️ opencode Permission**: `"bash": "ask"` en `opencode.json` — requiere aprobación del usuario para ejecutar comandos en el clúster
 
 #### Activación
 - **Trigger**: Post-deploy. Se invoca para verificar health checks (`CrashLoopBackOff`), endpoints respondiendo HTTP 200, y resiliencia de pods.
@@ -114,10 +96,6 @@ El **guardián del conocimiento**. Actúa como un *hook* (evento disparador) aut
 
 #### Contexto y Archivos Asignados
 - **Dominio**: `docs/` y navegación `mkdocs.yml`.
-- **Conocimiento Base**: `.gemini/skills/documentation-agent/artifacts/doc_skill.md`
-- **Protocolo**: `.gemini/skills/documentation-agent/artifacts/agent_protocol.md`
-- **Guía de Estilo**: `.gemini/skills/k8s-ftth-docs-style/artifacts/documentation_style_skill.md`
-- **opencode Skill**: `.opencode/skills/documentation/SKILL.md` (thin → lee protocolo + guía de estilo de `.gemini/skills/`)
 
 #### Activación
 - **Trigger**: Finalización exitosa de cualquier workflow que modifique el repositorio.
@@ -125,38 +103,94 @@ El **guardián del conocimiento**. Actúa como un *hook* (evento disparador) aut
 
 ---
 
+## Estructura de Archivos
+
+Cada plataforma organiza los archivos de configuración de los agentes de forma distinta, pero el contenido del conocimiento de dominio es el mismo.
+
+### Gemini (Antygravity)
+
+```
+.gemini/skills/
+├── orquestador/                          ← (implícito en el sistema de prompts de Gemini)
+├── infrastructure-agent/
+│   ├── metadata.json                     ← metadatos del agente
+│   └── artifacts/
+│       ├── agent_protocol.md             ← protocolo de operación
+│       └── infra_skill.md               ← conocimiento de dominio K8s
+├── application-agent/
+│   ├── metadata.json
+│   └── artifacts/
+│       ├── agent_protocol.md
+│       └── app_skill.md                 ← conocimiento de dominio Flask/Nginx
+├── cicd-agent/
+│   ├── metadata.json
+│   └── artifacts/
+│       ├── agent_protocol.md
+│       └── cicd_skill.md               ← conocimiento de dominio CI/CD
+├── validation-agent/
+│   ├── metadata.json
+│   └── artifacts/
+│       └── agent_protocol.md
+├── documentation-agent/
+│   ├── metadata.json
+│   └── artifacts/
+│       └── agent_protocol.md
+└── k8s-ftth-docs-style/                  ← guía de estilo (referenciada por documentation-agent)
+    ├── metadata.json
+    └── artifacts/
+        └── documentation_style_skill.md
+```
+
+### opencode
+
+```
+.
+├── opencode.json                         ← configuración raíz
+├── AGENTS.md                             ← orquestador (instrucciones del sistema)
+└── .opencode/
+    ├── scripts/
+    │   └── codegraph-summary.py          ← consulta .codegraph/codegraph.db
+    └── skills/
+        ├── project-context/SKILL.md      ← carga estructura del proyecto desde CodeGraph
+        ├── infrastructure/SKILL.md       ← thin → .gemini/skills/infrastructure-agent/
+        ├── application/SKILL.md          ← thin → .gemini/skills/application-agent/
+        ├── cicd/SKILL.md                 ← thin → .gemini/skills/cicd-agent/
+        ├── validation/SKILL.md           ← thin → .gemini/skills/validation-agent/
+        └── documentation/SKILL.md        ← thin → .gemini/skills/documentation-agent/ + k8s-ftth-docs-style/
+```
+
+---
+
 ## Instrucciones de Operación
 
 ### Inspección de la Configuración Interna
 
-Cada agente es una entidad modular en el sistema de archivos de configuración. Su implementación difiere según la plataforma:
-
-**Gemini (Antygravity)** — archivos en `.gemini/`:
+**Gemini (Antygravity):**
 ```bash
 # Ver metadatos del Application Agent
 cat .gemini/skills/application-agent/metadata.json
 
-# Ver metadatos del Validation Agent
-cat .gemini/skills/validation-agent/metadata.json
+# Ver conocimiento de dominio del Infrastructure Agent
+cat .gemini/skills/infrastructure-agent/artifacts/infra_skill.md
 ```
 
-**opencode** — archivos en `.opencode/`:
+**opencode:**
 ```bash
-# Ver el skill de infraestructura (thin → apunta a .gemini/)
-cat .opencode/skills/infrastructure/SKILL.md
-
 # Ver el orquestador (instrucciones del sistema)
 cat AGENTS.md
 
-# Ver la configuración raíz de opencode
+# Ver la configuración raíz
 cat opencode.json
+
+# Ver un skill thin (ej: infrastructure)
+cat .opencode/skills/infrastructure/SKILL.md
 ```
 
 ### Modificación y Evolución de un Agente
 
-Para alterar o mejorar el comportamiento de un agente, no necesitas "reprogramarlo" con código, ya que operan basados en prompts estructurales. Debes ajustar sus archivos de definición:
+Para alterar o mejorar el comportamiento de un agente, debes ajustar sus archivos de definición:
 
-1. **Si quieres que aprenda una nueva convención técnica** (ej. cómo escribir un StatefulSet): Edita su archivo `[agente]_skill.md`.
+1. **Si quieres que aprenda una nueva convención técnica** (ej. cómo escribir un StatefulSet): Edita su archivo `*_skill.md` (Gemini) → opencode lo toma automáticamente.
 2. **Si quieres que se active bajo nuevas condiciones** (ej. que responda a comandos de Terraform): Edita su archivo `agent_protocol.md`.
 
 !!! warning "Restricción de Contexto"
@@ -165,19 +199,6 @@ Para alterar o mejorar el comportamiento de un agente, no necesitas "reprogramar
 ---
 
 ## Implementación en opencode
-
-### Visión General
-
-Los mismos agentes de Harness Engineering están configurados para **opencode**, permitiendo trabajar con el mismo paradigma cuando se usa opencode como alternativa a Antygravity. La arquitectura es idéntica: el Orquestador recibe el pedido, determina el dominio, carga el skill, delega a un sub-agente vía `task()`, y consolida el resultado.
-
-| Componente | En Gemini (Antygravity) | En opencode |
-|---|---|---|
-| **Orquestador** | `AGENTS.md` + sistema de prompts de Gemini | `AGENTS.md` (instrucciones del sistema) + `opencode.json` |
-| **Infrastructure Agent** | `.gemini/skills/infrastructure-agent/` | `.opencode/skills/infrastructure/SKILL.md` (thin) |
-| **Application Agent** | `.gemini/skills/application-agent/` | `.opencode/skills/application/SKILL.md` (thin) |
-| **CI/CD Agent** | `.gemini/skills/cicd-agent/` | `.opencode/skills/cicd/SKILL.md` (thin) |
-| **Validation Agent** | `.gemini/skills/validation-agent/` | `.opencode/skills/validation/SKILL.md` (thin) |
-| **Documentation Agent** | `.gemini/skills/documentation-agent/` | `.opencode/skills/documentation/SKILL.md` (thin) |
 
 ### Skills Thin — Sincronización Automática
 
@@ -202,15 +223,6 @@ python3 .opencode/scripts/codegraph-summary.py
 
 Esto consulta `.codegraph/codegraph.db` (SQLite) y devuelve la estructura indexada del proyecto (archivos, nodos, relaciones). Reemplaza la exploración manual de directorios, ahorrando tokens.
 
-### Archivos de Configuración
-
-| Archivo | Propósito |
-|---|---|
-| `opencode.json` | Config raíz: activa `AGENTS.md`, registra skills, permisos (`bash: ask`) |
-| `AGENTS.md` | Define el Orquestador: reglas, ruteo por dominio, workflow de delegación |
-| `.opencode/scripts/codegraph-summary.py` | Script que consulta `.codegraph/codegraph.db` |
-| `.opencode/skills/<dominio>/SKILL.md` | Skills thin que referencian `.gemini/skills/<agente>/artifacts/` |
-
 ### Flujo de Trabajo en opencode
 
 ```
@@ -231,5 +243,5 @@ Esto consulta `.codegraph/codegraph.db` (SQLite) y devuelve la estructura indexa
 |---|---|
 | Se actualiza un skill en Gemini | No requiere acción — opencode lee la nueva versión automáticamente |
 | Se agrega un nuevo agente en Gemini | Crear `.opencode/skills/<nuevo>/SKILL.md` apuntando a sus archivos |
-| Se elimina un agente en Gemini | Eliminar su skill de `.opencode/skills/` |
+| Se elimina un agente en Gemini | Eliminar su skill correspondiente en `.opencode/skills/` |
 | Se modifica el CodeGraph DB | El script `codegraph-summary.py` lo consulta tal cual está |
