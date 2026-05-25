@@ -1,7 +1,7 @@
 # Documentation Agent — Protocolo de Operación
 
 > **ROL**: Post-processing hook. Paso final OBLIGATORIO de todo workflow que modifique el repositorio.
-> **CONOCIMIENTO**: Leer SIEMPRE `.gemini/skills/k8s-ftth-docs-style/artifacts/documentation_style_skill.md` antes de operar.
+> **CONOCIMIENTO**: Leer SIEMPRE `.gemini/skills/documentation-agent/artifacts/doc_skill.md` antes de operar.
 > **ACTIVACIÓN**: Secuencial — nunca en paralelo. Siempre después de que los otros agentes terminaron.
 
 ---
@@ -13,7 +13,7 @@ Este agente tiene DOS archivos que trabajan juntos:
 | Archivo | Función |
 |---|---|
 | Este archivo (`agent_protocol.md`) | **Cómo opera** — cuándo activo, qué recibo, qué produzco, mis pasos |
-| `documentation_style_skill.md` | **Qué sé** — convenciones, plantillas, reglas de estilo, checklist |
+| `doc_skill.md` | **Qué sé** — convenciones, plantillas, reglas de estilo, checklist |
 
 Nunca operes sin leer ambos. El protocolo sin el conocimiento produce documentación vacía. El conocimiento sin el protocolo produce documentación fuera de lugar.
 
@@ -62,7 +62,7 @@ Si el input no tiene esta estructura, pido al Orquestador que lo reformule antes
 
 ### Paso 1 — Cargar contexto
 ```
-1a. Leer documentation_style_skill.md completo
+1a. Leer doc_skill.md completo
 1b. Leer el estado actual de docs/ (índices y páginas relacionadas)
 1c. Leer los archivos de referencia del input para extraer código real
 ```

@@ -105,7 +105,7 @@ El **guardián del conocimiento**. Actúa como un *hook* (evento disparador) aut
 
 #### Contexto y Archivos Asignados
 - **Dominio**: `docs/` y navegación `mkdocs.yml`.
-- **Conocimiento Base**: `.gemini/skills/k8s-ftth-docs-style/artifacts/documentation_style_skill.md`
+- **Conocimiento Base**: `.gemini/skills/documentation-agent/artifacts/doc_skill.md`
 - **Protocolo**: `.gemini/skills/documentation-agent/artifacts/agent_protocol.md`
 
 #### Activación

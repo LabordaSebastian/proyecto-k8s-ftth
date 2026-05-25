@@ -7,13 +7,13 @@
   "created": "2026-05-24",
   "project": "LabordaSebastian/proyecto-k8s-ftth",
   "workspace": "/home/ing-laborda/Project_Kubernetes",
-  "primary_context": "../k8s-ftth-docs-style/artifacts/documentation_style_skill.md",
+  "primary_context": "doc_skill.md",
   "artifacts": [
-    "agent_protocol.md"
+    "agent_protocol.md",
+    "doc_skill.md"
   ],
   "references": [
     "docs/",
-    "mkdocs.yml",
-    ".gemini/skills/k8s-ftth-docs-style/artifacts/documentation_style_skill.md"
+    "mkdocs.yml"
   ]
 }

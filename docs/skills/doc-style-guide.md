@@ -6,7 +6,7 @@ Esta guía codifica todas las convenciones de escritura, estructura y proceso qu
 
 | Artefacto | Ubicación | Propósito |
 |---|---|---|
-| Skill (fuente de verdad) | `.gemini/skills/k8s-ftth-docs-style/artifacts/skill.md` | Leída por el asistente IA antes de cada tarea de documentación |
+| Skill (fuente de verdad) | `.gemini/skills/documentation-agent/artifacts/doc_skill.md` | Leída por el asistente IA antes de cada tarea de documentación |
 | Guía pública (este archivo) | `docs/skills/doc-style-guide.md` | Versión legible para humanos publicada en el site |
 
 El flujo de uso es el siguiente:
