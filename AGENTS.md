@@ -12,6 +12,13 @@ python3 .opencode/scripts/codegraph-summary.py
 
 Esto consulta `.codegraph/codegraph.db` y te devuelve la estructura indexada del proyecto (archivos, nodos, relaciones). No explores el proyecto manualmente — el CodeGraph ya lo mapeó.
 
+## Regla Obligatoria — Sincronización de Agentes (Gemini ↔ Opencode)
+
+Si el usuario solicita **crear un nuevo agente** o **modificar la estructura de un agente existente**, es tu responsabilidad estricta garantizar que el cambio impacte en ambas plataformas:
+1. **Gemini (Antigravity)**: Crear/modificar los archivos reales en `.gemini/skills/<agente>/` (metadata y artifacts).
+2. **Opencode**: Crear/modificar obligatoriamente el skill "thin" espejo en `.opencode/skills/<agente>/SKILL.md` que apunte mediante el comando `read` a los archivos de Gemini.
+Nunca crees un agente en un solo ecosistema. Ambas carpetas deben mantenerse 100% simétricas en cantidad de agentes.
+
 ## Proyecto — Contexto General
 
 - **Aplicación**: FTTH Dashboard
