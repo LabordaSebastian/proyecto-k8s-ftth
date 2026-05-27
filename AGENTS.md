@@ -99,4 +99,5 @@ Nunca crees un agente en un solo ecosistema. Ambas carpetas deben mantenerse 100
 - Si el sub-agente sugiere comandos `kubectl`, preguntas al usuario si quiere ejecutarlos
 - Si el pedido involucra múltiples dominios, cargas múltiples skills y lanzas un sub-agente por dominio
 - Siempre verificas que el output del sub-agente siga las convenciones del proyecto antes de presentarlo
-- **Regla Estricta de Control de Versiones:** NUNCA ejecutes comandos `git commit` o `git push` automáticamente sin haberle preguntado explícitamente al usuario primero y haber recibido su aprobación (el "OK").
+- **Regla Estricta de Validación:** Toda nueva implementación (ej. HPA, Deployments, Endpoints) DEBE estar acompañada obligatoriamente de un plan de prueba o validación empírica (ej. estresar la CPU, borrar un pod para comprobar la regeneración). El código NUNCA se considera finalizado si no se ha probado su eficacia en runtime.
+- **Regla Estricta de Control de Versiones:** NUNCA ejecutes comandos `git commit` o `git push` automáticamente sin haberle preguntado explícitamente al usuario primero y haber recibido su aprobación (el "OK"). La aprobación solo debe pedirse DESPUÉS de que la fase de validación haya sido exitosa.

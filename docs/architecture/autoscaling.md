@@ -4,7 +4,9 @@
 
 El proyecto implementa estrategias avanzadas de escalado de recursos para garantizar la estabilidad de los componentes bajo carga, mientras se protegen los recursos del clúster subyacente (nodos de Kind).
 
-Actualmente, la estrategia principal se basa en el **Vertical Pod Autoscaler (VPA)**.
+La estrategia de escalado es híbrida:
+- **Vertical (VPA)**: Aplicado a bases de datos en memoria (Redis) donde escalar horizontalmente es complejo por el estado de los datos.
+- **Horizontal (HPA)**: Aplicado a cargas de trabajo *stateless* (Backend API) donde añadir nuevas réplicas es instantáneo y seguro.
 
 ## Vertical Pod Autoscaler (VPA)
 
@@ -35,3 +37,29 @@ La implementación fue validada exitosamente mediante una inyección de carga ma
 3. El **VPA Recommender** ajustó el `target` de memoria de 64Mi a 250Mi.
 4. El **VPA Updater** evictó el pod de Redis (`Connection reset by peer` en el benchmark).
 5. El **VPA Admission Controller** inyectó los nuevos recursos al reiniciar el pod, permitiéndole soportar la carga.
+
+---
+
+## Horizontal Pod Autoscaler (HPA)
+
+A diferencia del VPA, el HPA reacciona a los picos de carga añadiendo **más réplicas** (pods) del mismo servicio para distribuir el tráfico, en lugar de darle más recursos a un solo pod.
+
+### Implementación en el Proyecto: Backend
+El Backend (API Flask) es una aplicación *stateless* (sin estado), lo que lo hace el candidato perfecto para escalar horizontalmente. El HPA observa constantemente el consumo de CPU reportado por el Metrics Server.
+
+#### Configuración (`k8s/07-autoscaling/backend-hpa.yaml`)
+El HPA del backend está configurado con las siguientes políticas:
+- `minReplicas`: 2 (Garantiza alta disponibilidad constante).
+- `maxReplicas`: 5 (Límite superior para proteger el clúster).
+- `metrics`: Escala cuando la utilización promedio de CPU de todos los pods supera el **70%**.
+
+*Nota Crítica:* Para que el HPA funcione, el Deployment original (`backend-deployment.yaml`) tiene que declarar estrictamente `resources.requests.cpu`. Si no, el HPA es incapaz de calcular el porcentaje.
+
+### Validación: Prueba de Estrés
+La implementación fue validada empíricamente simulando tráfico masivo de usuarios:
+
+1. Se lanzó un pod efímero de ataque (`busybox`) ejecutando un bucle infinito de peticiones HTTP:
+   `while true; do wget -q -O- http://ftth-backend-service:5000/health; done`
+2. El Metrics Server detectó el pico, elevando la utilización por encima del 70%.
+3. El HPA ordenó de inmediato el *Scale Up*, levantando réplicas progresivamente hasta alcanzar `Replicas: 5`.
+4. Al detener el ataque, se observó el *Scale Down Stabilization Window* (cooldown). Kubernetes esperó un promedio de 5 minutos de calma sostenida antes de empezar a matar las réplicas sobrantes para volver al mínimo de 2.

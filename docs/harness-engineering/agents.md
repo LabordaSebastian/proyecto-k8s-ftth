@@ -220,8 +220,18 @@ Tutor teórico de Kubernetes orientado al examen **CKA**. Responde consultas con
 #### Definición y Rol
 No es un agente, sino una **capa de explicación automática** integrada en el Infrastructure Agent y el Validation Agent. Después de cada entrega de YAML o cada diagnóstico, estos agentes incluyen un bloque `CKA LEARNING` con el dominio del examen, concepto clave, explicación didáctica y referencia oficial.
 
-#### Filosofía: "Build Fast, Learn Deep"
-La IA entrega el código funcional primero (sin gatekeeping) y explica después. El aprendizaje CKA ocurre como consecuencia natural del desarrollo real, no como una actividad separada.
+#### Filosofía V3: "Build Fast, Learn Deep"
+
+El arnés (harness) está diseñado bajo la filosofía **AI Pair Programming**. 
+En versiones anteriores, el sistema actuaba como un tutor restrictivo (*Gatekeeping*), reteniendo respuestas para forzar al usuario a pensar. 
+
+En la versión actual (v3), el sistema prioriza la **velocidad de desarrollo empírico**:
+1. **Código Primero:** El agente entrega el manifiesto o código funcional, optimizado y listo para aplicar de forma inmediata.
+2. **Validación Obligatoria:** Ningún código se da por finalizado ni se envía al repositorio (`git push`) sin haber sido validado en runtime (ej. probar el autoscalado con carga, matar un pod para probar resiliencia).
+3. **Explicación Después (CKA Layer):** Inmediatamente después del código y la prueba, el agente anexa un bloque `CKA LEARNING` explicando qué hace el recurso, cómo se relaciona con el examen CKA y compartiendo tips oficiales.
+4. **Documentación Automática:** Todo concepto nuevo aprendido se registra en el cheat-sheet automáticamente.
+
+Esta separación ("la máquina escribe y prueba, el humano absorbe el concepto") aumenta radicalmente el *Time-to-Value* sin sacrificar el objetivo de certificación ni la calidad del código.
 
 ---
 
