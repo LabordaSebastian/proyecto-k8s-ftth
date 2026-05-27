@@ -235,6 +235,12 @@ Los skills de opencode son **thin**: su contenido no duplica el conocimiento de 
 - **Cero duplicación**: el conocimiento de dominio vive una sola vez en `.gemini/skills/`
 - **Independencia de plataforma**: Antygravity y opencode comparten la misma fuente de verdad
 
+!!! danger "Regla Obligatoria de Sincronización"
+    Si solicitas crear un **nuevo agente**, debes verificar siempre que se creen los archivos en **ambas plataformas**:
+    1. En `.gemini/skills/<agente>/` (Archivos reales: metadata y artifacts).
+    2. En `.opencode/skills/<agente>/SKILL.md` (El espejo "thin").
+    **NUNCA** debes crear un agente en un solo ecosistema. Mantener la simetría es vital para evitar fallas de contexto.
+
 ```
 .gemini/skills/infrastructure-agent/artifacts/infra_skill.md  ← fuente de verdad
 .opencode/skills/infrastructure/SKILL.md                       ← thin: "leé el archivo de arriba"
