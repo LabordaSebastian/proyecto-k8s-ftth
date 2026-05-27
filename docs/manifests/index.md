@@ -9,7 +9,8 @@ k8s/
 ├── 02-storage/       # ConfigMaps (contenido estático del Frontend)
 ├── 03-deployments/   # Workloads: Frontend, Backend, Redis, CronJob
 ├── 05-services/      # Exposición de red: ClusterIP y NodePort
-└── 06-metrics/       # Metrics Server para kubectl top
+├── 06-metrics/       # Metrics Server para kubectl top
+└── 07-autoscaling/   # HPA para backend y VPA para base de datos
 ```
 
 !!! tip "Orden de aplicación"
@@ -23,3 +24,4 @@ k8s/
 | Service | `05-services/*.yaml` | [Services](services.md) |
 | ConfigMap | `02-storage/frontend-configmap.yaml` | [ConfigMaps](configmaps.md) |
 | DaemonSet/Deployment | `06-metrics/metrics-server.yaml` | [Metrics Server](metrics-server.md) |
+| HPA / VPA | `07-autoscaling/*.yaml` | [Autoscaling](../architecture/autoscaling.md) |
