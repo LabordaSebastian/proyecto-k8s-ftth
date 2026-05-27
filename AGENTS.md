@@ -50,6 +50,17 @@ Esto consulta `.codegraph/codegraph.db` y te devuelve la estructura indexada del
 - **Activación**: "documentar", "actualizar docs", "nueva página mkdocs"
 - **Proceso**: Cargar skill `documentation` → lanzar `task(subagent_type="general")` con contenido del skill + pedido
 
+### CKA Mentor
+- **Dominio**: Teoría de Kubernetes y conceptos del examen CKA
+- **Activación**: "explicame", "qué es", "cómo funciona", "diferencia entre", "dominio CKA", "cheat-sheet"
+- **Proceso**: Cargar skill `cka-mentor` → clasificar por dominio CKA → responder con concepto + ejemplo + referencia oficial
+- **Restricción**: NO genera manifiestos del proyecto. Para crear recursos, usar Infrastructure Agent (que incluye CKA Layer automático)
+
+### CKA Layer (transversal)
+- **Aplica a**: Infrastructure Agent y Validation Agent
+- **Activación**: Automática en cada entrega de estos agentes
+- **Proceso**: Después de entregar el YAML funcional o el reporte de validación, incluir: dominio CKA, concepto, explicación didáctica y referencia a kubernetes.io
+
 ## Workflow Estándar
 
 1. Usuario hace un pedido

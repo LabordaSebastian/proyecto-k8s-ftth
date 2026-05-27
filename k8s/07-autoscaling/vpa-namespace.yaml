@@ -1,0 +1,16 @@
+# El VPA (Vertical Pod Autoscaler) necesita su controlador instalado en el clúster.
+# A diferencia del HPA que viene built-in, el VPA se instala aparte.
+# Este script instala los componentes oficiales del VPA desde el repo de Kubernetes.
+#
+# Componentes que instala:
+#   - VPA Recommender: analiza métricas históricas y genera recomendaciones
+#   - VPA Updater: aplica las recomendaciones reiniciando pods (si updateMode=Auto)
+#   - VPA Admission Controller: inyecta los recursos recomendados en pods nuevos
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vpa-system
+  labels:
+    app: vpa
+    tier: system

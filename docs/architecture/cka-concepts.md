@@ -25,6 +25,13 @@ Esta sección sirve como **material de repaso acelerado** orientado a la certifi
 - **¿Para qué sirve?** Garantiza que el número deseado de Pods esté siempre en ejecución. Si un nodo falla, el Deployment levanta los Pods en un nodo sano. Además, gestiona transiciones seguras entre versiones.
 - **Caso de uso en el proyecto:** `ftth-backend-deployment` declara `replicas: 2`. Utiliza la estrategia `RollingUpdate` con `maxSurge: 1` y `maxUnavailable: 0`, lo que significa que durante una actualización (ej. cambio de imagen a `v2`), Kubernetes creará un pod nuevo antes de destruir los viejos, garantizando cero *downtime*.
 
+### 2. Vertical Pod Autoscaler (VPA)
+
+- **¿Qué es?** Un controlador avanzado que ajusta automáticamente los `requests` y `limits` (CPU/Memoria) de los contenedores basándose en su uso real en el tiempo.
+- **¿Para qué sirve?** Evita el adivinar recursos. En lugar de escalar agregando más réplicas (como el HPA), el VPA escala inyectando más recursos a las réplicas existentes. Si un pod se queda corto, el VPA lo evicta (mata) y su Admission Controller inyecta los nuevos recursos cuando el pod se recrea.
+- **Caso de uso en el proyecto:** Implementado en `k8s/07-autoscaling/redis-vpa.yaml` (`updateMode: "Auto"`). Durante pruebas de estrés, el VPA detectó falta de memoria en la base de datos, mató el pod y lo reinició con límites más altos (250Mi) automáticamente.
+- **Trampa CKA:** El VPA y el HPA no deben usarse juntos sobre la misma métrica (ej. CPU). Además, el VPA siempre requiere que el Metrics Server esté operativo en el clúster.
+
 ### 2. Services: ClusterIP vs NodePort
 
 - **¿Qué es?** Una abstracción que define un conjunto lógico de Pods y una política de red para acceder a ellos. Desacopla la red dinámica de los Pods (que cambian de IP al reiniciarse) ofreciendo un DNS o IP estable.

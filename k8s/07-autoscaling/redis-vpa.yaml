@@ -1,0 +1,54 @@
+# VPA para Redis — Vertical Pod Autoscaler
+#
+# ¿Por qué Redis y no el Backend?
+# Redis es una base de datos en memoria cuyo consumo real varía según la cantidad de datos
+# almacenados en caché. Los valores de requests/limits actuales (64Mi/128Mi) fueron estimados
+# manualmente. El VPA analiza el consumo real y recomienda valores óptimos basados en métricas
+# históricas del Metrics Server.
+#
+# Prerequisito: El VPA controller debe estar instalado en el clúster.
+# Instalación oficial (único método soportado actualmente):
+#   git clone https://github.com/kubernetes/autoscaler.git
+#   cd autoscaler/vertical-pod-autoscaler
+#   ./hack/vpa-up.sh
+
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: ftth-redis-vpa
+  labels:
+    app: ftth-redis
+    tier: database
+spec:
+  # targetRef apunta al Deployment que queremos optimizar.
+  # El VPA observa los pods creados por este Deployment.
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ftth-redis
+
+  # updateMode controla el comportamiento del VPA:
+  #   "Off"     → Solo genera recomendaciones, no toca los pods (modo observación)
+  #   "Initial" → Aplica valores solo cuando se crean pods nuevos
+  #   "Auto"    → Aplica valores reiniciando pods activos cuando es necesario
+  #
+  # Usamos "Off" primero para observar las recomendaciones sin riesgo.
+  # Una vez validadas, se puede cambiar a "Auto" para aplicación automática.
+  updatePolicy:
+    updateMode: "Auto"
+
+  # resourcePolicy define los límites dentro de los cuales el VPA puede recomendar.
+  # Esto evita que el VPA recomiende valores absurdos (ej. 10Gi para un Redis de caché).
+  resourcePolicy:
+    containerPolicies:
+    - containerName: redis-cache
+      # Mínimo absoluto: Redis necesita al menos esto para arrancar
+      minAllowed:
+        cpu: "25m"
+        memory: "32Mi"
+      # Máximo absoluto: Tope de seguridad para proteger el nodo Kind
+      maxAllowed:
+        cpu: "200m"
+        memory: "256Mi"
+      # Solo optimizar CPU y memoria (son los únicos recursos soportados por VPA)
+      controlledResources: ["cpu", "memory"]

@@ -12,6 +12,7 @@ Harness Engineering es un principio de diseño aplicado a sistemas de Inteligenc
 | `Agente` | `CI/CD Agent` | Especialista en pipelines (`.github/workflows/`) y script `manage-env.sh`. |
 | `Agente` | `Validation Agent` | Verificador de estado post-deploy en el clúster Kind (requiere permisos). |
 | `Agente` | `Documentation Agent`| Post-processing hook secuencial que mantiene `docs/` siempre actualizada. |
+| `Agente` | `CKA Mentor` | Tutor exclusivo para teoría CKA. Responde dudas sin tocar el código. |
 
 ```mermaid
 graph TD
@@ -23,15 +24,31 @@ graph TD
         O -->|.github/| CA["CI/CD Agent"]
         O -->|Runtime| VA["Validation Agent"]
         
-        IA -.->|Propuestas| O
-        AA -.->|Propuestas| O
-        CA -.->|Propuestas| O
-        VA -.->|Validación| O
+        IA -.->|YAML + CKA Layer| O
+        AA -.->|Código| O
+        CA -.->|Pipeline| O
+        VA -.->|Status + CKA Layer| O
     end
     
+    O -->|Dudas teóricas| CKA["CKA Mentor"]
+    
     O -->|Workflow completado| DA["Documentation Agent"]
-    DA -->|Actualiza| Docs["docs/"]
+    DA -->|Registra nuevos conceptos| Docs["docs/"]
 ```
+
+---
+
+## Filosofía V3: "Build Fast, Learn Deep"
+
+El arnés (harness) está diseñado bajo la filosofía **AI Pair Programming**. 
+En versiones anteriores, el sistema actuaba como un tutor restrictivo (*Gatekeeping*), reteniendo respuestas para forzar al usuario a pensar. 
+
+En la versión actual (v3), el sistema prioriza la **velocidad de desarrollo**:
+1. **Código Primero:** El agente entrega el manifiesto o código funcional, optimizado y listo para aplicar de forma inmediata.
+2. **Explicación Después (CKA Layer):** Inmediatamente después del código, el agente anexa un bloque `CKA LEARNING` explicando qué hace el recurso, cómo se relaciona con el examen CKA y compartiendo tips oficiales.
+3. **Documentación Automática:** Todo concepto nuevo aprendido se registra en el cheat-sheet automáticamente.
+
+Esta separación ("la máquina escribe, el humano absorbe el concepto") aumenta radicalmente el *Time-to-Value* sin sacrificar el objetivo de certificación.
 
 ---
 

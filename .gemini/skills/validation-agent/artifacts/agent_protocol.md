@@ -130,7 +130,12 @@ Endpoints:           [Frontend: HTTP XXX | Backend /status: {"status": "X"}]
 CronJob:             [último job: completado/fallido, hace X minutos]
 Issues detectados:   [lista de problemas con diagnóstico]
 Acción recomendada:  [siguiente paso para resolver cada issue]
+CKA Layer:           [dominio Troubleshooting + concepto + explicación + referencia]
 ```
+
+El **CKA Layer** en validación es especialmente valioso porque el dominio de Troubleshooting
+representa el **30% del examen CKA** — el bloque más pesado. Cada diagnóstico real
+es una oportunidad de aprendizaje.
 
 ---
 

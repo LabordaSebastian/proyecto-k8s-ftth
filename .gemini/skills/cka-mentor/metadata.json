@@ -1,0 +1,18 @@
+{
+  "skill_name": "cka-mentor",
+  "title": "CKA Mentor — Tutor de Kubernetes para Certificación CKA",
+  "description": "Agente especializado en teoría pura de Kubernetes orientada al examen CKA. Responde consultas conceptuales clasificándolas por dominio del examen, citando siempre kubernetes.io como fuente de verdad. NO genera manifiestos del proyecto — para eso están los agentes de desarrollo con su CKA Layer.",
+  "role": "cka-tutor",
+  "activation": "on-demand",
+  "created": "2026-05-27",
+  "project": "LabordaSebastian/proyecto-k8s-ftth",
+  "workspace": "/home/ing-laborda/Project_Kubernetes",
+  "artifacts": [
+    "agent_protocol.md",
+    "cka_skill.md"
+  ],
+  "references": [
+    "https://kubernetes.io/docs/",
+    "docs/architecture/cka-concepts.md"
+  ]
+}

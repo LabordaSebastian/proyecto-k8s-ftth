@@ -131,14 +131,14 @@ Cada plataforma organiza los archivos de configuración de los agentes de forma 
 │   ├── metadata.json
 │   └── artifacts/
 │       └── agent_protocol.md
-├── documentation-agent/
-│   ├── metadata.json
-│   └── artifacts/
-│       └── agent_protocol.md
-└── k8s-ftth-docs-style/                  ← guía de estilo (referenciada por documentation-agent)
+    └── artifacts/
+        ├── agent_protocol.md
+        └── doc_skill.md
+└── cka-mentor/                           ← tutor teórico CKA
     ├── metadata.json
     └── artifacts/
-        └── documentation_style_skill.md
+        ├── agent_protocol.md
+        └── cka_skill.md                  ← 5 dominios del examen CKA
 ```
 
 ### opencode
@@ -195,6 +195,33 @@ Para alterar o mejorar el comportamiento de un agente, debes ajustar sus archivo
 
 !!! warning "Restricción de Contexto"
     Nunca le agregues instrucciones de código Python al `infra_skill.md`, ni comandos de Kubernetes al `app_skill.md`. Mantener las responsabilidades estrictamente separadas es la clave de Harness Engineering.
+
+---
+
+### Agente 6: CKA Mentor
+
+#### Definición y Rol
+Tutor teórico de Kubernetes orientado al examen **CKA**. Responde consultas conceptuales puras ("qué es un PV", "diferencia entre DaemonSet y Deployment"), clasificando cada respuesta por dominio del examen y citando siempre `kubernetes.io` como fuente de verdad.
+
+#### Contexto y Archivos Asignados
+- **Dominio**: Los 5 dominios del examen CKA (Cluster Architecture, Workloads, Services, Storage, Troubleshooting).
+- **Conocimiento Base**: `.gemini/skills/cka-mentor/artifacts/cka_skill.md`
+- **Protocolo**: `.gemini/skills/cka-mentor/artifacts/agent_protocol.md`
+
+#### Activación
+- **Trigger**: "Explicame", "qué es", "cómo funciona", "diferencia entre", "dominio CKA".
+- **Modo**: On-demand (solo cuando el usuario hace consultas teóricas).
+- **Restricción**: NO genera manifiestos del proyecto. Para eso están los agentes de desarrollo.
+
+---
+
+### CKA Layer (Transversal)
+
+#### Definición y Rol
+No es un agente, sino una **capa de explicación automática** integrada en el Infrastructure Agent y el Validation Agent. Después de cada entrega de YAML o cada diagnóstico, estos agentes incluyen un bloque `CKA LEARNING` con el dominio del examen, concepto clave, explicación didáctica y referencia oficial.
+
+#### Filosofía: "Build Fast, Learn Deep"
+La IA entrega el código funcional primero (sin gatekeeping) y explica después. El aprendizaje CKA ocurre como consecuencia natural del desarrollo real, no como una actividad separada.
 
 ---
 

@@ -61,12 +61,19 @@ Antes de proponer cualquier cambio, verificar:
 - Incluir comentarios en el YAML explicando decisiones no obvias
 - Si hay más de un archivo afectado, listarlos en orden de aplicación
 
-### Paso 4 — Checklist pre-entrega
-- [ ] El nombre del recurso sigue la convención `ftth-[componente]`
-- [ ] El `selector` y los `labels` son consistentes entre Service y Deployment
-- [ ] Los `resources:` están definidos con requests y limits
-- [ ] La ruta del archivo sigue `k8s/NN-tipo/nombre-componente-tipo.yaml`
-- [ ] Si es NodePort, el puerto está mapeado en `kind-config.yaml`
+### Paso 5 — CKA Layer (obligatorio en toda entrega)
+
+Después de entregar el YAML funcional, incluir siempre:
+
+```
+CKA LEARNING
+─────────────
+Dominio:     [Cluster Architecture | Workloads | Services | Storage | Troubleshooting]
+Concepto:    [Nombre del concepto K8s principal usado en esta solución]
+Explicación: [2-4 oraciones explicando el "por qué" de cada decisión técnica]
+Referencia:  [URL de kubernetes.io con la documentación oficial]
+Tip CKA:     [Un dato práctico que suelen evaluar en el examen]
+```
 
 ---
 
@@ -80,6 +87,7 @@ Archivos a modificar: [lista con rutas y secciones afectadas]
 Orden de aplicación: [secuencia kubectl apply]
 Advertencias:        [breaking changes, downtime esperado, etc.]
 Validación sugerida: [comandos kubectl get/describe para verificar]
+CKA Layer:           [dominio + concepto + explicación + referencia + tip]
 ```
 
 ---
