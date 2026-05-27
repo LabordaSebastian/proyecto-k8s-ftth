@@ -246,7 +246,7 @@ Los skills de opencode son **thin**: su contenido no duplica el conocimiento de 
 .opencode/skills/infrastructure/SKILL.md                       ← thin: "leé el archivo de arriba"
 ```
 
-### CodeGraph — Carga de Contexto del Proyecto
+### CodeGraph — Carga y Mantenimiento del Contexto
 
 Al iniciar cada sesión, el Orquestador ejecuta:
 
@@ -255,6 +255,9 @@ python3 .opencode/scripts/codegraph-summary.py
 ```
 
 Esto consulta `.codegraph/codegraph.db` (SQLite) y devuelve la estructura indexada del proyecto (archivos, nodos, relaciones). Reemplaza la exploración manual de directorios, ahorrando tokens.
+
+**Sincronización Automática:**
+Se ha instruido al Orquestador para que, si durante su trabajo realiza cambios estructurales (crea, borra o renombra archivos), ejecute automáticamente `npx @colbymchenry/codegraph sync`. Esto asegura que el mapa de código se mantenga vivo y nunca pierda coherencia con los archivos reales del proyecto.
 
 ### Flujo de Trabajo en opencode
 
@@ -277,4 +280,4 @@ Esto consulta `.codegraph/codegraph.db` (SQLite) y devuelve la estructura indexa
 | Se actualiza un skill en Gemini | No requiere acción — opencode lee la nueva versión automáticamente |
 | Se agrega un nuevo agente en Gemini | Crear `.opencode/skills/<nuevo>/SKILL.md` apuntando a sus archivos |
 | Se elimina un agente en Gemini | Eliminar su skill correspondiente en `.opencode/skills/` |
-| Se modifica el CodeGraph DB | El script `codegraph-summary.py` lo consulta tal cual está |
+| Se crean o borran archivos en el proyecto | El Orquestador ejecuta `npx @colbymchenry/codegraph sync` automáticamente |

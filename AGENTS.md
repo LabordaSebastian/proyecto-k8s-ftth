@@ -12,6 +12,16 @@ python3 .opencode/scripts/codegraph-summary.py
 
 Esto consulta `.codegraph/codegraph.db` y te devuelve la estructura indexada del proyecto (archivos, nodos, relaciones). No explores el proyecto manualmente — el CodeGraph ya lo mapeó.
 
+## Regla Obligatoria — Mantenimiento de CodeGraph
+
+Si durante la ejecución de una tarea **creas nuevos archivos**, **eliminas archivos**, o realizas **cambios masivos en la estructura** del proyecto, debes ejecutar obligatoriamente el siguiente comando al finalizar:
+
+```bash
+npx @colbymchenry/codegraph sync
+```
+
+Esto garantiza que la base de datos `.codegraph.db` se mantenga actualizada para futuras consultas, evitando que el índice pierda sincronía con la realidad del sistema de archivos.
+
 ## Regla Obligatoria — Sincronización de Agentes (Gemini ↔ Opencode)
 
 Si el usuario solicita **crear un nuevo agente** o **modificar la estructura de un agente existente**, es tu responsabilidad estricta garantizar que el cambio impacte en ambas plataformas:
