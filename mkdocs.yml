@@ -52,7 +52,7 @@ nav:
       - Backend (API Python): architecture/backend.md
       - Base de Datos (Redis): architecture/redis.md
       - Monitoreo de Red (CronJob): architecture/cronjob.md
-      - Conceptos Claves (CKA): architecture/cka-concepts.md
+  - Conceptos Claves (CKA): architecture/cka-concepts.md
   - Harness Engineering:
       - harness-engineering/index.md
       - Anatomía de los Agentes: harness-engineering/agents.md
