@@ -7,10 +7,10 @@
 # históricas del Metrics Server.
 #
 # Prerequisito: El VPA controller debe estar instalado en el clúster.
-# Instalación oficial (único método soportado actualmente):
-#   git clone https://github.com/kubernetes/autoscaler.git
-#   cd autoscaler/vertical-pod-autoscaler
-#   ./hack/vpa-up.sh
+# En este proyecto, el script manage-env.sh (Paso 3) se encarga de instalarlo
+# automáticamente utilizando el chart de Helm oficial de Fairwinds.
+#   helm repo add fairwinds-stable https://charts.fairwinds.com/stable
+#   helm install vpa fairwinds-stable/vpa --namespace vpa
 
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler

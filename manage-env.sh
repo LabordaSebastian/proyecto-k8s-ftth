@@ -126,16 +126,31 @@ cmd_up() {
     log_success "Imagen cargada en el clúster '${CLUSTER_NAME}'."
 
     # ------------------------------------------------------------------
-    # PASO 3: Aplicar manifiestos de Kubernetes
+    # PASO 3: Instalar Vertical Pod Autoscaler (VPA) via Helm
+    # Es necesario que los CRDs de VPA existan ANTES de aplicar k8s/07-autoscaling
     # ------------------------------------------------------------------
-    log_step "Paso 3/5 — Aplicando manifiestos de Kubernetes..."
+    log_step "Paso 3/6 — Verificando Vertical Pod Autoscaler (VPA)..."
+    if helm status vpa --namespace vpa &>/dev/null; then
+        log_info "VPA ya está instalado. Omitiendo."
+    else
+        log_info "Instalando VPA via Helm (fairwinds-stable/vpa)..."
+        helm repo add fairwinds-stable https://charts.fairwinds.com/stable &>/dev/null
+        helm repo update fairwinds-stable &>/dev/null
+        helm install vpa fairwinds-stable/vpa --namespace vpa --create-namespace &>/dev/null
+        log_success "VPA instalado correctamente."
+    fi
+
+    # ------------------------------------------------------------------
+    # PASO 4: Aplicar manifiestos de Kubernetes
+    # ------------------------------------------------------------------
+    log_step "Paso 4/6 — Aplicando manifiestos de Kubernetes..."
     kubectl apply -R -f "$MANIFESTS_DIR"
     log_success "Manifiestos aplicados correctamente."
 
     # ------------------------------------------------------------------
-    # PASO 4: Instalar KubeView si no está instalado
+    # PASO 5: Instalar KubeView si no está instalado
     # ------------------------------------------------------------------
-    log_step "Paso 4/5 — Verificando KubeView..."
+    log_step "Paso 5/6 — Verificando KubeView..."
     if helm status kubeview --namespace "$KUBEVIEW_NAMESPACE" &>/dev/null; then
         log_info "KubeView ya está instalado. Omitiendo."
     elif [[ -d "$KUBEVIEW_CHART_DIR" ]]; then
@@ -155,12 +170,12 @@ cmd_up() {
     fi
 
     # ------------------------------------------------------------------
-    # PASO 5: Iniciar GitHub Actions Runner en segundo plano
+    # PASO 6: Iniciar GitHub Actions Runner en segundo plano
     # El runner no está configurado como servicio de systemd, por lo que
     # se lanza manualmente con nohup y se guarda su PID para poder
     # detenerlo limpiamente con el comando 'down'.
     # ------------------------------------------------------------------
-    log_step "Paso 5/5 — Iniciando GitHub Actions Runner..."
+    log_step "Paso 6/6 — Iniciando GitHub Actions Runner..."
     if [[ -f "$RUNNER_PID_FILE" ]] && kill -0 "$(cat "$RUNNER_PID_FILE")" 2>/dev/null; then
         log_info "El Runner ya está corriendo (PID: $(cat "$RUNNER_PID_FILE")). Omitiendo."
     else
