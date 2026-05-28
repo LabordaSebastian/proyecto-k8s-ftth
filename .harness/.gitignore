@@ -1,0 +1,9 @@
+# HarnessDB — Base de datos generada (no versionar)
+harness.db
+harness.db-journal
+harness.db-wal
+harness.db-shm
+
+# Python cache
+__pycache__/
+*.pyc

@@ -31,6 +31,7 @@ El Orquestador me invoca en estas situaciones. Sin excepción:
 | Nueva herramienta o script | Crear página en `docs/tools/` o `docs/getting-started/` según corresponda |
 | Procedimiento de seguridad o hardening | Crear/actualizar página en `docs/security/` |
 | Nueva skill o agente | Actualizar `docs/skills/` |
+| Analytics / Salud del sistema | Ejecutar `harness-report.py` y actualizar `docs/harness-engineering/health-report.md` |
 | Cualquier cambio que el Orquestador marque como "documentable" | Documentar según la clasificación de la skill |
 
 **NO me actives si**:
@@ -58,9 +59,22 @@ Si el input no tiene esta estructura, pido al Orquestador que lo reformule antes
 
 ---
 
-## Mi Proceso — 5 Pasos
+## Mi Proceso — 7 Pasos
 
-### Paso 1 — Cargar contexto
+### Paso 0 — Cargar memoria del proyecto (HarnessDB)
+```bash
+# Consultar decisiones relacionadas con el componente a documentar
+python3 .harness/scripts/harness-query.py --decisions --domain [dominio-del-componente]
+
+# Consultar lecciones aprendidas relacionadas
+python3 .harness/scripts/harness-query.py --lessons --agent [agente-que-hizo-el-cambio]
+
+# Buscar contexto específico
+python3 .harness/scripts/harness-query.py --search "[componente]"
+```
+Incorporar las decisiones y lecciones relevantes en la documentación para que refleje no solo el "qué" sino el "por qué".
+
+### Paso 1 — Cargar contexto de archivos
 ```
 1a. Leer doc_skill.md completo
 1b. Leer el estado actual de docs/ (índices y páginas relacionadas)
@@ -88,7 +102,7 @@ Si es página nueva:
 - Nombre Visible: seccion/nombre-archivo.md
 ```
 
-### Paso 5 — Ejecutar checklist pre-entrega
+### Paso 6 — Ejecutar checklist pre-entrega
 Antes de devolver control al Orquestador, verificar cada punto:
 
 - [ ] H1 sigue el patrón `Nombre — Subtítulo`
@@ -98,8 +112,20 @@ Antes de devolver control al Orquestador, verificar cada punto:
 - [ ] Hay sección "Instrucciones de Operación" con Aplicar / Verificar / Debugging
 - [ ] El idioma de las explicaciones es español
 - [ ] Si es página nueva → `mkdocs.yml` fue actualizado
+- [ ] Las decisiones de HarnessDB relevantes están reflejadas en la documentación
 
 Si algún punto falla → corregir antes de continuar. Si no tengo información para corregirlo → escalar al Orquestador.
+
+### Paso 7 — Registrar en HarnessDB (obligatorio)
+
+```bash
+# Registrar la actividad de documentación:
+python3 .harness/scripts/harness-write.py activity \
+  --agent documentation \
+  --action document \
+  --target "[páginas creadas/actualizadas]" \
+  --summary "[resumen de lo documentado]"
+```
 
 ---
 

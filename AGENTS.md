@@ -22,6 +22,25 @@ npx @colbymchenry/codegraph sync
 
 Esto garantiza que la base de datos `.codegraph.db` se mantenga actualizada para futuras consultas, evitando que el índice pierda sincronía con la realidad del sistema de archivos.
 
+## Regla Obligatoria — Carga de Memoria (HarnessDB)
+
+DESPUÉS de cargar el CodeGraph, ejecuta:
+
+```bash
+python3 .harness/scripts/harness-session.py
+```
+
+Esto consulta `.harness/harness.db` y te devuelve un resumen inteligente del proyecto: decisiones activas, lecciones aprendidas, estado de recursos, y actividad reciente. Si la DB no existe, ejecutar primero `python3 .harness/scripts/harness-init.py`.
+
+## Regla Obligatoria — Registro de Actividad (HarnessDB)
+
+Al finalizar TODA tarea que produzca cambios significativos, el sub-agente responsable DEBE registrar:
+- **Decisiones** arquitectónicas tomadas (si las hubo)
+- **Lecciones** aprendidas (errores, gotchas, patrones)
+- **Actividad** realizada (siempre)
+
+Usando los scripts `python3 .harness/scripts/harness-write.py [decision|lesson|activity]`. Ver el protocolo de cada agente para los comandos específicos.
+
 ## Regla Obligatoria — Sincronización de Agentes (Gemini ↔ Opencode)
 
 Si el usuario solicita **crear un nuevo agente** o **modificar la estructura de un agente existente**, es tu responsabilidad estricta garantizar que el cambio impacte en ambas plataformas:
@@ -40,6 +59,12 @@ Nunca crees un agente en un solo ecosistema. Ambas carpetas deben mantenerse 100
 - **Red**: Frontend expuesto en NodePort 30080 del host
 
 ## Agentes del Sistema
+
+### Skill Evolution Agent (Meta-Agente)
+- **Dominio**: Todos los archivos `_skill.md` de `.gemini/skills/`
+- **Activación**: "evaluar skills", o automáticamente post-workflow
+- **Proceso**: Cargar skill `evolution-agent` → analizar DB → proponer cambios → **solicitar OK del usuario** → modificar skills.
+- **Regla Estricta**: NUNCA modifica un archivo sin el "Sí" explícito del usuario ante su propuesta (Evolution Proposal).
 
 ### Infrastructure Agent
 - **Dominio**: `k8s/` y `kind-config.yaml`
@@ -78,20 +103,26 @@ Nunca crees un agente en un solo ecosistema. Ambas carpetas deben mantenerse 100
 - **Activación**: Automática en cada entrega de estos agentes
 - **Proceso**: Después de entregar el YAML funcional o el reporte de validación, incluir: dominio CKA, concepto, explicación didáctica y referencia a kubernetes.io
 
-## Workflow Estándar
+## Workflow Estándar (Orquestador)
 
-1. Usuario hace un pedido
-2. Determinas el dominio del pedido (infra, app, cicd, validation, docs)
-3. Si es necesario, ejecutas `codegraph-summary.py` para contexto del proyecto
-4. Cargas el skill correspondiente con el tool `skill(name="<dominio>")`
-5. El skill te indica qué archivos `.gemini/skills/<agente>/artifacts/` leer
-6. Lees esos archivos para obtener el conocimiento de dominio actualizado
-7. Lanzas `task(subagent_type="general")` con:
+1. Usuario hace un pedido (o el Orquestador retoma la tarea marcada como `[in_progress]` en el Session Brief).
+2. Determinas el dominio del pedido (infra, app, cicd, validation, docs, evolution).
+3. Si la tarea es nueva, la registras: `harness-write.py task-start --agent orquestador --description "..."`.
+4. Ejecutas `codegraph-summary.py` para contexto de código.
+5. Ejecutas `harness-session.py` para contexto de memoria (decisiones, lecciones, estado).
+6. Cargas el skill correspondiente con el tool `skill(name="<dominio>")`.
+7. El skill te indica qué archivos `.gemini/skills/<agente>/artifacts/` leer.
+8. Lees esos archivos para obtener el conocimiento de dominio actualizado.
+9. Lanzas `task(subagent_type="general")` con:
    - El rol específico que debe asumir ("Actuás como Infrastructure Agent...")
    - El contenido completo del skill (convenciones, protocolo, ejemplos)
    - El pedido concreto del usuario
-8. El sub-agente devuelve su propuesta
-9. Consolidas el resultado y lo presentas al usuario
+   - **El contexto relevante de HarnessDB** (decisiones y lecciones del dominio)
+10. El sub-agente devuelve su propuesta y tú, como Orquestador, aplicas los cambios.
+11. **Verificas que el sub-agente haya registrado su actividad en HarnessDB.**
+12. Ejecutas validación y documentación (si aplica).
+13. Al terminar la tarea, la marcas completada: `harness-write.py task-complete --task-id X`.
+14. **Evolución (Opcional):** Si fue una tarea compleja con nuevas decisiones o lecciones, invocas al *Skill Evolution Agent* para proponer mejoras al sistema.
 
 ## Reglas de Consolidación
 

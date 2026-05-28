@@ -40,9 +40,22 @@ Contexto:    [endpoint o función específica afectada]
 
 ---
 
-## Mi Proceso — 4 Pasos
+## Mi Proceso — 6 Pasos
 
-### Paso 1 — Cargar contexto
+### Paso 0 — Cargar memoria del proyecto (HarnessDB)
+```bash
+# Consultar decisiones relevantes al dominio de la aplicación
+python3 .harness/scripts/harness-query.py --decisions --domain architecture
+
+# Verificar lecciones aprendidas del agente de aplicación
+python3 .harness/scripts/harness-query.py --lessons --agent application
+
+# Buscar contexto específico si el pedido menciona un componente
+python3 .harness/scripts/harness-query.py --search "[término-clave]"
+```
+Usar esta información para evitar repetir errores y mantener coherencia con decisiones previas.
+
+### Paso 1 — Cargar contexto de archivos
 ```
 1a. Leer app_skill.md (patrones de código de este proyecto)
 1b. Leer los archivos afectados: app.py, requirements.txt, Dockerfile
@@ -68,6 +81,34 @@ Contexto:    [endpoint o función específica afectada]
 - [ ] El error handling usa el mismo patrón `try/except redis.ConnectionError`
 - [ ] Si hay nueva dependencia → está en `requirements.txt` con versión fija
 - [ ] No hay credenciales, IPs ni puertos hardcodeados en el código
+
+### Paso 5 — Registrar en HarnessDB (obligatorio)
+
+Al finalizar, registrar en la memoria del proyecto:
+
+```bash
+# Si se tomó una decisión de diseño significativa:
+python3 .harness/scripts/harness-write.py decision \
+  --agent application \
+  --domain architecture \
+  --title "[título]" \
+  --context "[por qué]" \
+  --decision "[qué se decidió]"
+
+# Si se descubrió algo relevante:
+python3 .harness/scripts/harness-write.py lesson \
+  --agent application \
+  --category [error|pattern|tip] \
+  --title "[título]" \
+  --description "[descripción]"
+
+# Siempre registrar la actividad:
+python3 .harness/scripts/harness-write.py activity \
+  --agent application \
+  --action [create|modify] \
+  --target "[archivo afectado]" \
+  --summary "[resumen]"
+```
 
 ---
 

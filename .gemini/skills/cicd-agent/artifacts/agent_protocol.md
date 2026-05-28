@@ -40,9 +40,22 @@ Contexto:    [nuevo componente o cambio que disparó esta solicitud]
 
 ---
 
-## Mi Proceso — 4 Pasos
+## Mi Proceso — 6 Pasos
 
-### Paso 1 — Cargar contexto
+### Paso 0 — Cargar memoria del proyecto (HarnessDB)
+```bash
+# Consultar decisiones del dominio CI/CD
+python3 .harness/scripts/harness-query.py --decisions --agent cicd
+
+# Verificar lecciones aprendidas
+python3 .harness/scripts/harness-query.py --lessons --agent cicd
+
+# Buscar contexto específico
+python3 .harness/scripts/harness-query.py --search "[término-clave]"
+```
+Usar esta información para evitar repetir errores y mantener coherencia con decisiones previas.
+
+### Paso 1 — Cargar contexto de archivos
 ```
 1a. Leer cicd_skill.md (patrones del pipeline y del script)
 1b. Leer el workflow o script afectado completo
@@ -72,6 +85,27 @@ Contexto:    [nuevo componente o cambio que disparó esta solicitud]
 - [ ] El paso nuevo sigue la nomenclatura con emojis del pipeline existente
 - [ ] Los nuevos pasos de `manage-env.sh` usan `log_step/log_info/log_success`
 - [ ] No hay credenciales hardcodeadas en el workflow (usar `${{ secrets.X }}`)
+
+### Paso 5 — Registrar en HarnessDB (obligatorio)
+
+Al finalizar, registrar en la memoria del proyecto:
+
+```bash
+# Si se tomó una decisión de CI/CD significativa:
+python3 .harness/scripts/harness-write.py decision \
+  --agent cicd \
+  --domain automation \
+  --title "[título]" \
+  --context "[por qué]" \
+  --decision "[qué se decidió]"
+
+# Siempre registrar la actividad:
+python3 .harness/scripts/harness-write.py activity \
+  --agent cicd \
+  --action [create|modify] \
+  --target "[archivo afectado]" \
+  --summary "[resumen]"
+```
 
 ---
 

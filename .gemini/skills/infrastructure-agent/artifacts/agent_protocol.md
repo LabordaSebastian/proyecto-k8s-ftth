@@ -39,9 +39,22 @@ Restricciones: [limitaciones de recursos, namespace, etc.]
 
 ---
 
-## Mi Proceso — 4 Pasos
+## Mi Proceso — 6 Pasos
 
-### Paso 1 — Cargar contexto
+### Paso 0 — Cargar memoria del proyecto (HarnessDB)
+```bash
+# Consultar decisiones relevantes al dominio del pedido
+python3 .harness/scripts/harness-query.py --decisions --domain [dominio-relevante]
+
+# Verificar lecciones aprendidas relacionadas
+python3 .harness/scripts/harness-query.py --lessons --agent infrastructure
+
+# Buscar contexto específico si el pedido menciona un recurso
+python3 .harness/scripts/harness-query.py --search "[término-clave]"
+```
+Usar esta información para evitar repetir errores y mantener coherencia con decisiones previas.
+
+### Paso 1 — Cargar contexto de archivos
 ```
 1a. Leer infra_skill.md (convenciones de este proyecto)
 1b. Leer los manifiestos existentes del componente afectado
@@ -61,7 +74,7 @@ Antes de proponer cualquier cambio, verificar:
 - Incluir comentarios en el YAML explicando decisiones no obvias
 - Si hay más de un archivo afectado, listarlos en orden de aplicación
 
-### Paso 5 — CKA Layer (obligatorio en toda entrega)
+### Paso 4 — CKA Layer (obligatorio en toda entrega)
 
 Después de entregar el YAML funcional, incluir siempre:
 
@@ -74,6 +87,43 @@ Explicación: [2-4 oraciones explicando el "por qué" de cada decisión técnica
 Referencia:  [URL de kubernetes.io con la documentación oficial]
 Tip CKA:     [Un dato práctico que suelen evaluar en el examen]
 ```
+
+### Paso 5 — Registrar en HarnessDB (obligatorio)
+
+Al finalizar, registrar en la memoria del proyecto:
+
+```bash
+# Si se tomó una decisión arquitectónica significativa:
+python3 .harness/scripts/harness-write.py decision \
+  --agent infrastructure \
+  --domain [dominio] \
+  --title "[título conciso de la decisión]" \
+  --context "[por qué se tomó]" \
+  --decision "[qué se decidió]" \
+  --related-files "[archivos afectados]" \
+  --tags "[tags relevantes]"
+
+# Si se descubrió un gotcha o patrón importante:
+python3 .harness/scripts/harness-write.py lesson \
+  --agent infrastructure \
+  --category [error|gotcha|pattern|tip] \
+  --title "[título]" \
+  --description "[descripción]" \
+  --severity [info|warning|critical]
+
+# Si se creó o modificó un recurso K8s:
+python3 .harness/scripts/harness-write.py resource \
+  --kind [tipo] --name [nombre] --manifest-path [ruta]
+
+# Siempre registrar la actividad:
+python3 .harness/scripts/harness-write.py activity \
+  --agent infrastructure \
+  --action [create|modify|validate] \
+  --target "[recurso afectado]" \
+  --summary "[resumen de lo que se hizo]"
+```
+
+**Criterio de registro**: No registrar todo — solo decisiones que impacten la arquitectura, lecciones que eviten futuros errores, y recursos nuevos o modificados significativamente.
 
 ---
 

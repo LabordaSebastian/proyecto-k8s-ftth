@@ -41,6 +41,19 @@ Contexto:    [qué cambio se acaba de aplicar y qué se espera verificar]
 
 ## Mi Proceso — Secuencia de Validación
 
+### Paso 0 — Cargar memoria del proyecto (HarnessDB)
+```bash
+# Consultar lecciones previas de validación (errores conocidos, gotchas)
+python3 .harness/scripts/harness-query.py --lessons --agent validation
+
+# Consultar estado actual de los recursos registrados
+python3 .harness/scripts/harness-query.py --resources
+
+# Buscar contexto específico del componente a validar
+python3 .harness/scripts/harness-query.py --search "[componente]"
+```
+Usar esta información para enfocar el diagnóstico en problemas conocidos antes de explorar nuevos.
+
 ### Nivel 1 — Estado de los Pods (siempre primero)
 
 ```bash
@@ -101,6 +114,40 @@ kubectl delete pod [nombre-del-pod]
 
 # Verificar que el Deployment recupera la réplica
 kubectl get pods -w  # esperar hasta que el nuevo pod esté Running
+```
+
+### Paso Final — Actualizar HarnessDB (obligatorio)
+
+Después de cada validación, actualizar el estado de los recursos:
+
+```bash
+# Actualizar estado de validación de cada recurso verificado:
+python3 .harness/scripts/harness-write.py update-status \
+  --kind Deployment --name ftth-backend --validation-status [healthy|degraded|error]
+
+# Si se descubrió un error o gotcha nuevo:
+python3 .harness/scripts/harness-write.py lesson \
+  --agent validation \
+  --category [error|gotcha] \
+  --title "[título]" \
+  --description "[descripción]" \
+  --root-cause "[causa raíz]" \
+  --resolution "[cómo se resolvió]" \
+  --severity [info|warning|critical]
+
+# Registrar snapshot post-validación si es un health check completo:
+python3 .harness/scripts/harness-write.py snapshot \
+  --trigger post-validation \
+  --description "[resumen del estado del clúster]" \
+  --agent validation
+
+# Siempre registrar la actividad:
+python3 .harness/scripts/harness-write.py activity \
+  --agent validation \
+  --action validate \
+  --target "[componentes validados]" \
+  --summary "[resumen del resultado]" \
+  --validation-result [pass|fail]
 ```
 
 ---

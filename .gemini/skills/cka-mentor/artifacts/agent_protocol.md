@@ -51,7 +51,20 @@ Contexto: [opcional — relación con el proyecto FTTH si aplica]
 
 ---
 
-## Mi Proceso — 4 Pasos
+## Mi Proceso — 6 Pasos
+
+### Paso 0 — Cargar memoria del proyecto (HarnessDB)
+```bash
+# Consultar lecciones aprendidas relevantes al tema preguntado
+python3 .harness/scripts/harness-query.py --lessons --category tip
+
+# Buscar si ya se explicó este concepto antes
+python3 .harness/scripts/harness-query.py --search "[concepto-preguntado]"
+
+# Consultar decisiones del proyecto que usen este concepto
+python3 .harness/scripts/harness-query.py --decisions --domain [dominio-relevante]
+```
+Usar esta información para dar ejemplos reales del proyecto y evitar repetir explicaciones idénticas.
 
 ### Paso 1 — Clasificar por dominio CKA
 Determinar a cuál de los 5 dominios del examen pertenece la consulta:
@@ -76,6 +89,25 @@ Determinar a cuál de los 5 dominios del examen pertenece la consulta:
 
 ### Paso 4 — Coordinar con Doc Agent
 Si el concepto explicado no está en `docs/architecture/cka-concepts.md`, notificar al Orquestador para que el Documentation Agent lo agregue.
+
+### Paso 5 — Registrar en HarnessDB (obligatorio)
+
+```bash
+# Registrar el concepto enseñado como lección/tip:
+python3 .harness/scripts/harness-write.py lesson \
+  --agent cka-mentor \
+  --category tip \
+  --title "CKA: [nombre del concepto]" \
+  --description "[resumen de lo explicado]" \
+  --tags "[dominio-cka, concepto]"
+
+# Registrar actividad:
+python3 .harness/scripts/harness-write.py activity \
+  --agent cka-mentor \
+  --action document \
+  --target "[concepto K8s]" \
+  --summary "[qué se explicó]"
+```
 
 ---
 
