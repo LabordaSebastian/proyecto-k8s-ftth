@@ -16,6 +16,18 @@ El proyecto fue construido con un enfoque en las mejores prácticas de DevOps y 
 
 ---
 
+## 🤖 Harness Engineering (AI Agents Architecture)
+
+Este proyecto cuenta con una arquitectura de agentes autónomos de última generación llamada **Harness Engineering**. No es solo un repositorio de código, es un sistema "vivo" diseñado para ser operado, auditado y evolucionado por Inteligencia Artificial (Gemini / Opencode).
+
+Sus componentes principales son:
+* **CodeGraph:** Un índice AST que escanea el repositorio y le otorga a los agentes una "memoria estructural" (saben exactamente qué archivos existen y cómo se relacionan).
+* **HarnessDB (Memoria Persistente):** Una base de datos SQLite integrada (`.harness/`) donde los agentes registran Decisiones Arquitectónicas, Lecciones Aprendidas, y el estado vivo del clúster (Memoria Episódica).
+* **Evolution Agent:** Un meta-agente inmunológico que analiza las lecciones aprendidas tras cada despliegue y propone actualizaciones a los protocolos del resto de los agentes para evitar que repitan errores pasados.
+* **Harness Analytics:** Generación automática de reportes de salud (`health-report.md`) que miden intervenciones de los agentes y fallos críticos detectados en validación.
+
+---
+
 ## Arquitectura de Microservicios
 
 La plataforma está dividida en componentes ligeros (imágenes Alpine) para optimizar el consumo de hardware, demostrando que es posible operar una arquitectura compleja en entornos de recursos limitados (ej. < 3GB de RAM).
@@ -66,9 +78,10 @@ El entorno local se gestiona con el script **`manage-env.sh`**, que automatiza t
 Este comando realiza automáticamente:
 1. Crea el clúster Kind (si no existe) con `kind-config.yaml`
 2. Buildea y carga la imagen `ftth-backend:v1` en los nodos de Kind *(evita `ErrImageNeverPull`)*
-3. Aplica todos los manifiestos de `k8s/` de forma recursiva
-4. Instala KubeView via Helm (si el chart está disponible en `/tmp/kubeview`)
-5. Inicia el GitHub Actions Runner en segundo plano
+3. Instala el **Vertical Pod Autoscaler (VPA)** usando Helm (Fairwinds) para optimizar recursos.
+4. Aplica todos los manifiestos de `k8s/` de forma recursiva
+5. Instala KubeView via Helm (si el chart está disponible en `/tmp/kubeview`)
+6. Inicia el GitHub Actions Runner en segundo plano
 
 **Detener y destruir el entorno:**
 ```bash
@@ -92,9 +105,12 @@ La infraestructura como código (IaC) está organizada de manera profesional par
 
 ```text
 proyecto-k8s-ftth/
+├── .gemini/                   # Skills y Protocolos de los Agentes IA (Antigravity)
+├── .opencode/                 # Espejos de Skills para Agentes en Opencode
+├── .harness/                  # Base de datos SQLite (Memoria) y Scripts Python (CLI)
 ├── .github/
-│   └── workflows/
-│       └── ci-cd.yml          # Pipeline de GitHub Actions
+│   └── workflows/             # Pipeline de GitHub Actions
+├── docs/                      # Documentación MkDocs, Reportes de Analytics y Arquitectura
 ├── src/
 │   ├── frontend/              # Código e interfaces de usuario
 │   └── backend/               # Código fuente de la API (Python/Flask)
@@ -103,4 +119,7 @@ proyecto-k8s-ftth/
     ├── 02-storage/            # Volúmenes y ConfigMaps (ej. Dashboard HTML)
     ├── 03-deployments/        # Nginx, Python API, Redis y CronJob
     ├── 04-security/           # Network Policies y Security Contexts
-    └── 05-services/           # ClusterIPs y NodePorts
+    ├── 05-services/           # ClusterIPs y NodePorts
+    ├── 06-metrics/            # Metrics Server
+    └── 07-autoscaling/        # HPA (Horizontal) y VPA (Vertical) Pod Autoscalers
+```
