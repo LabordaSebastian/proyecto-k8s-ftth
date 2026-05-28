@@ -177,3 +177,14 @@ El directorio existe pero está vacío. Es el candidato natural para:
 - `PodSecurityPolicy` / `PodSecurityAdmission` — restricciones de privilegios en contenedores
 
 Al agregar cualquier recurso aquí, actualizar también `docs/security/`.
+
+---
+
+## Errores Comunes (Lecciones Aprendidas de HarnessDB)
+
+> **⚠️ PREVENCIÓN OBLIGATORIA:** Revisa esta lista antes de proponer cambios para no repetir fallos históricos del proyecto.
+
+1. **Mismatch Selectors-Labels (Fallo Crítico de Red):** 
+   - **El error:** Un `Service` no enruta tráfico a los pods y devuelve *Connection Refused*, a pesar de que los pods están `Running`.
+   - **La causa:** El bloque `selector:` del Service no coincide **exactamente** con los `labels:` del PodTemplate en el Deployment.
+   - **La regla:** Antes de entregar un Service + Deployment, copia el bloque `labels` del Deployment y pégalo directamente en el `selector` del Service. No los escribas dos veces.

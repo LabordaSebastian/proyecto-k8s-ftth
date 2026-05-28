@@ -163,6 +163,7 @@ python3 .harness/scripts/harness-write.py activity \
 | `Evicted` | `kubectl get pods` → ver REASON. Probablemente nodo sin recursos |
 | Frontend vacío (200 pero sin contenido) | `kubectl get configmap ftth-dashboard-html` → verificar que el ConfigMap existe |
 | Backend retorna `"ftth_network": "Offline"` | Redis no responde. Verificar pod de Redis: `kubectl get pods -l app=ftth-redis` |
+| Service no responde / Connection Refused | `kubectl get endpoints <service>` → Si está vacío, hay mismatch entre el `selector` del Service y los `labels` del Deployment. |
 
 ---
 
