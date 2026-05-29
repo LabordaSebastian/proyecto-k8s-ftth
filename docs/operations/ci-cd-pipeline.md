@@ -50,10 +50,7 @@ jobs:
     # 7. Despliegue en Kubernetes
     - name: ☸️ Aplicar manifiestos de Kubernetes
       run: |
-        kubectl apply -f k8s/01-namespaces-rbac/ || true
-        kubectl apply -f k8s/02-storage/
-        kubectl apply -f k8s/03-deployments/
-        kubectl apply -f k8s/05-services/
+        kubectl apply -R -f k8s/
 
     # 8. Post-deploy validation
     - name: ⏳ Validar que deployments están ready
@@ -78,7 +75,7 @@ jobs:
 4. **Versionado automático**: Calcula el próximo tag de imagen basándose en los tags de git existentes. Si el último tag es `v2`, la nueva imagen se etiqueta como `v3`. En la primera ejecución (sin tags), usa `v1`.
 5. **Construcción + dual tagging**: Construye la imagen con el tag semántico (`ftth-backend:v3`) y también la etiqueta como `:latest` para mantener compatibilidad con el manifiesto del Deployment.
 6. **Inyección en Kind**: Carga ambas etiquetas en los nodos del clúster Kind. Sin este paso, las imágenes locales no serían accesibles.
-7. **Despliegue en Kubernetes**: Aplica los manifiestos con `kubectl apply`. El `|| true` en `01-namespaces-rbac/` evita que falle si el namespace ya existe.
+7. **Despliegue en Kubernetes**: Aplica todos los manifiestos de forma recursiva con `kubectl apply -R -f k8s/`, asegurando que toda la infraestructura (storage, deployments, services, metrics y autoscaling) se despliegue en un solo comando.
 8. **Post-deploy validation**: Usa `kubectl rollout status` para esperar hasta que los Deployments estén completamente listos (timeout de 5 minutos). Si el rollout falla, el pipeline se marca como fallido. Esto garantiza que no se despliegue una versión rota.
 9. **Verificación final**: Imprime el estado de todos los Pods como resumen en los logs.
 

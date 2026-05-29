@@ -46,10 +46,7 @@ jobs:
     - name: ☸️ Aplicar manifiestos de Kubernetes
       run: |
         echo "Desplegando la infraestructura declarativa..."
-        kubectl apply -f k8s/01-namespaces-rbac/ || true
-        kubectl apply -f k8s/02-storage/
-        kubectl apply -f k8s/03-deployments/
-        kubectl apply -f k8s/05-services/
+        kubectl apply -R -f k8s/
 
     - name: ⏳ Validar que deployments están ready
       run: |

@@ -228,7 +228,7 @@ El script ejecuta un `wget` y termina en menos de 2 segundos. `10m` de CPU (1% d
 ### Aplicar el recurso
 
 ```bash
-kubectl apply -f k8s/03-deployments/network-checker-cronjob.yaml
+kubectl apply -f k8s/02-deployments/network-checker-cronjob.yaml
 ```
 
 ### Verificar el estado

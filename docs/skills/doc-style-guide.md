@@ -224,7 +224,7 @@ Solo se usan tres tipos. Su uso es estricto:
 | Imágenes Docker | `ftth-[componente]:v[N]` | `ftth-backend:v1` |
 | Label `app:` | `ftth-[componente]` | `app: ftth-frontend` |
 | Label `tier:` | `frontend` / `backend` / `data` / `worker` | `tier: backend` |
-| Rutas a manifiestos | `k8s/NN-tipo/nombre-tipo.yaml` | `k8s/03-deployments/backend-deployment.yaml` |
+| Rutas a manifiestos | `k8s/NN-tipo/nombre-tipo.yaml` | `k8s/02-deployments/backend-deployment.yaml` |
 | Puerto Frontend | `30080` | — |
 | Puerto KubeView | `30088` | — |
 | Nombre del clúster | `ftth-cluster` | — |

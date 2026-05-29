@@ -24,7 +24,7 @@ Redis (`ftth-redis`) es el candidato ideal para el VPA porque:
 - Su consumo de memoria es altamente variable y depende directamente de los datos insertados en la caché.
 - Adivinar sus límites estáticos es propenso a errores (provocando `OOMKilled` si es bajo, o desperdicio si es alto).
 
-#### Configuración (`k8s/07-autoscaling/redis-vpa.yaml`)
+#### Configuración (`k8s/05-autoscaling/redis-vpa.yaml`)
 El VPA de Redis está configurado en **updateMode: "Auto"** con las siguientes políticas de seguridad:
 - `minAllowed`: 25m CPU / 32Mi Memory
 - `maxAllowed`: 200m CPU / 256Mi Memory (para proteger el nodo Kind)
@@ -47,7 +47,7 @@ A diferencia del VPA, el HPA reacciona a los picos de carga añadiendo **más r�
 ### Implementación en el Proyecto: Backend
 El Backend (API Flask) es una aplicación *stateless* (sin estado), lo que lo hace el candidato perfecto para escalar horizontalmente. El HPA observa constantemente el consumo de CPU reportado por el Metrics Server.
 
-#### Configuración (`k8s/07-autoscaling/backend-hpa.yaml`)
+#### Configuración (`k8s/05-autoscaling/backend-hpa.yaml`)
 El HPA del backend está configurado con las siguientes políticas:
 - `minReplicas`: 2 (Garantiza alta disponibilidad constante).
 - `maxReplicas`: 5 (Límite superior para proteger el clúster).

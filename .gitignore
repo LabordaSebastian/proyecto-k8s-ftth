@@ -10,6 +10,7 @@
 venv/
 __pycache__/
 
+# Archivo temporal de diagnóstico de KubeView
 kubeview-diag.yaml
 
 # Archivos de runtime generados por manage-env.sh (no versionar)

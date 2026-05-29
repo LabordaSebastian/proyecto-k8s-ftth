@@ -24,7 +24,7 @@ Sus componentes principales son:
 * **CodeGraph:** Un índice AST que escanea el repositorio y le otorga a los agentes una "memoria estructural" (saben exactamente qué archivos existen y cómo se relacionan).
 * **HarnessDB (Memoria Persistente):** Una base de datos SQLite integrada (`.harness/`) donde los agentes registran Decisiones Arquitectónicas, Lecciones Aprendidas, y el estado vivo del clúster (Memoria Episódica).
 * **Evolution Agent:** Un meta-agente inmunológico que analiza las lecciones aprendidas tras cada despliegue y propone actualizaciones a los protocolos del resto de los agentes para evitar que repitan errores pasados.
-* **Harness Analytics:** Generación automática de reportes de salud (`health-report.md`) que miden intervenciones de los agentes y fallos críticos detectados en validación.
+* **Harness Analytics:** Generación automática de reportes de salud (`STATUS.md`, local y no versionado) que miden intervenciones de los agentes y fallos críticos detectados en validación.
 
 ---
 
@@ -80,7 +80,7 @@ Este comando realiza automáticamente:
 2. Buildea y carga la imagen `ftth-backend:v1` en los nodos de Kind *(evita `ErrImageNeverPull`)*
 3. Instala el **Vertical Pod Autoscaler (VPA)** usando Helm (Fairwinds) para optimizar recursos.
 4. Aplica todos los manifiestos de `k8s/` de forma recursiva
-5. Instala KubeView via Helm (si el chart está disponible en `/tmp/kubeview`)
+5. Instala KubeView via Helm (si el chart está disponible en `deploy/helm-charts/kubeview`)
 6. Inicia el GitHub Actions Runner en segundo plano
 
 **Detener y destruir el entorno:**
@@ -110,16 +110,13 @@ proyecto-k8s-ftth/
 ├── .harness/                  # Base de datos SQLite (Memoria) y Scripts Python (CLI)
 ├── .github/
 │   └── workflows/             # Pipeline de GitHub Actions
-├── docs/                      # Documentación MkDocs, Reportes de Analytics y Arquitectura
+├── docs/                      # Documentación MkDocs y Arquitectura
 ├── src/
-│   ├── frontend/              # Código e interfaces de usuario
 │   └── backend/               # Código fuente de la API (Python/Flask)
 └── k8s/                       # Manifiestos de Kubernetes
-    ├── 01-namespaces-rbac/    # Espacios de nombres y control de acceso
-    ├── 02-storage/            # Volúmenes y ConfigMaps (ej. Dashboard HTML)
-    ├── 03-deployments/        # Nginx, Python API, Redis y CronJob
-    ├── 04-security/           # Network Policies y Security Contexts
-    ├── 05-services/           # ClusterIPs y NodePorts
-    ├── 06-metrics/            # Metrics Server
-    └── 07-autoscaling/        # HPA (Horizontal) y VPA (Vertical) Pod Autoscalers
+    ├── 01-storage/            # Volúmenes y ConfigMaps (ej. Dashboard HTML)
+    ├── 02-deployments/        # Nginx, Python API, Redis y CronJob
+    ├── 03-services/           # ClusterIPs y NodePorts
+    ├── 04-metrics/            # Metrics Server
+    └── 05-autoscaling/        # HPA (Horizontal) y VPA (Vertical) Pod Autoscalers
 ```

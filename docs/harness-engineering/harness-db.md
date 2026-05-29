@@ -126,7 +126,7 @@ python3 .harness/scripts/harness-write.py lesson \
 python3 .harness/scripts/harness-write.py resource \
   --kind Deployment \
   --name ftth-nuevo \
-  --manifest-path k8s/03-deployments/nuevo.yaml
+  --manifest-path k8s/02-deployments/nuevo.yaml
 
 # Actualizar estado de validación
 python3 .harness/scripts/harness-write.py update-status \

@@ -213,8 +213,8 @@ El Service de tipo `ClusterIP` garantiza que el único componente que puede habl
 ### Aplicar los recursos
 
 ```bash
-kubectl apply -f k8s/03-deployments/redis-deployment.yaml
-kubectl apply -f k8s/05-services/redis-service.yaml
+kubectl apply -f k8s/02-deployments/redis-deployment.yaml
+kubectl apply -f k8s/03-services/redis-service.yaml
 ```
 
 ### Verificar el estado y el scheduling

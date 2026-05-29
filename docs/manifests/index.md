@@ -6,11 +6,11 @@ Los manifiestos se encuentran bajo la carpeta `k8s/`, ordenados numéricamente p
 
 ```text
 k8s/
-├── 02-storage/       # ConfigMaps (contenido estático del Frontend)
-├── 03-deployments/   # Workloads: Frontend, Backend, Redis, CronJob
-├── 05-services/      # Exposición de red: ClusterIP y NodePort
-├── 06-metrics/       # Metrics Server para kubectl top
-└── 07-autoscaling/   # HPA para backend y VPA para base de datos
+├── 01-storage/       # ConfigMaps (contenido estático del Frontend)
+├── 02-deployments/   # Workloads: Frontend, Backend, Redis, CronJob
+├── 03-services/      # Exposición de red: ClusterIP y NodePort
+├── 04-metrics/       # Metrics Server para kubectl top
+└── 05-autoscaling/   # HPA para backend y VPA para base de datos
 ```
 
 !!! tip "Orden de aplicación"
@@ -20,8 +20,8 @@ k8s/
 
 | Tipo | Archivo | Sección |
 |---|---|---|
-| Deployment | `03-deployments/*.yaml` | [Deployments](deployments.md) |
-| Service | `05-services/*.yaml` | [Services](services.md) |
-| ConfigMap | `02-storage/frontend-configmap.yaml` | [ConfigMaps](configmaps.md) |
-| DaemonSet/Deployment | `06-metrics/metrics-server.yaml` | [Metrics Server](metrics-server.md) |
-| HPA / VPA | `07-autoscaling/*.yaml` | [Autoscaling](../architecture/autoscaling.md) |
+| Deployment | `02-deployments/*.yaml` | [Deployments](deployments.md) |
+| Service | `03-services/*.yaml` | [Services](services.md) |
+| ConfigMap | `01-storage/frontend-configmap.yaml` | [ConfigMaps](configmaps.md) |
+| DaemonSet/Deployment | `04-metrics/metrics-server.yaml` | [Metrics Server](metrics-server.md) |
+| HPA / VPA | `05-autoscaling/*.yaml` | [Autoscaling](autoscaling.md) |

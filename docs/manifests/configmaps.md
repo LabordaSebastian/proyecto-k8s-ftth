@@ -1,6 +1,6 @@
 # ConfigMaps
 
-Esta sección documenta los recursos de tipo `ConfigMap` ubicados en `k8s/02-storage/`. Los ConfigMaps son el mecanismo de Kubernetes para **desacoplar la configuración del código**: permiten modificar el comportamiento de las aplicaciones sin reconstruir ni redesplegar imágenes Docker.
+Esta sección documenta los recursos de tipo `ConfigMap` ubicados en `k8s/01-storage/`. Los ConfigMaps son el mecanismo de Kubernetes para **desacoplar la configuración del código**: permiten modificar el comportamiento de las aplicaciones sin reconstruir ni redesplegar imágenes Docker.
 
 ## Resumen de ConfigMaps
 
@@ -8,14 +8,14 @@ Esta sección documenta los recursos de tipo `ConfigMap` ubicados en `k8s/02-sto
 |---|---|---|---|
 | `frontend-configmap.yaml` | `ftth-dashboard-html` | HTML + CSS del dashboard FTTH | `ftth-frontend` (montado como volumen) |
 
-!!! info "¿Por qué está en `02-storage/` y no en `02-config/`?"
-    En este proyecto, el ConfigMap se ubica en la carpeta `02-storage` porque su función principal es proveer contenido de archivo (el HTML del dashboard), siguiendo el patrón de "almacenamiento de configuración". La numeración asegura que se aplique antes que los Deployments (`03-`) que dependen de él.
+!!! info "¿Por qué está en `01-storage/` y no en `01-config/`?"
+    En este proyecto, el ConfigMap se ubica en la carpeta `01-storage` porque su función principal es proveer contenido de archivo (el HTML del dashboard), siguiendo el patrón de "almacenamiento de configuración". La numeración asegura que se aplique antes que los Deployments (`02-`) que dependen de él.
 
 ---
 
 ## Frontend Dashboard ConfigMap
 
-**Archivo:** `k8s/02-storage/frontend-configmap.yaml`
+**Archivo:** `k8s/01-storage/frontend-configmap.yaml`
 
 ```yaml
 apiVersion: v1
@@ -227,7 +227,7 @@ Esta es una distinción crítica tanto en la práctica como en el examen CKA:
 
 ```bash
 # El ConfigMap debe aplicarse ANTES que el Deployment del Frontend
-kubectl apply -f k8s/02-storage/frontend-configmap.yaml
+kubectl apply -f k8s/01-storage/frontend-configmap.yaml
 ```
 
 ### Verificar el estado
@@ -249,7 +249,7 @@ Para modificar el HTML (por ejemplo, cambiar el número de clientes activos de `
 
 ```bash
 # Editar directamente el archivo local y reaplicar
-kubectl apply -f k8s/02-storage/frontend-configmap.yaml
+kubectl apply -f k8s/01-storage/frontend-configmap.yaml
 
 # Forzar actualización inmediata en los Pods
 kubectl rollout restart deployment/ftth-frontend
@@ -292,7 +292,7 @@ kubectl describe pod -l app=ftth-frontend | grep -A 10 "Events"
 
 # Si aparece: "MountVolume.SetUp failed for volume ... configmap not found"
 # significa que el ConfigMap no fue aplicado antes que el Deployment
-kubectl apply -f k8s/02-storage/frontend-configmap.yaml
+kubectl apply -f k8s/01-storage/frontend-configmap.yaml
 kubectl rollout restart deployment/ftth-frontend
 ```
 

@@ -102,7 +102,7 @@ cmd_up() {
     # ------------------------------------------------------------------
     # PASO 1: Crear el clúster Kind si no existe
     # ------------------------------------------------------------------
-    log_step "Paso 1/5 — Verificando clúster Kind..."
+    log_step "Paso 1/6 — Verificando clúster Kind..."
     if kind get clusters 2>/dev/null | grep -q "^${CLUSTER_NAME}$"; then
         log_info "El clúster '${CLUSTER_NAME}' ya existe. Omitiendo creación."
     else
@@ -117,7 +117,7 @@ cmd_up() {
     # acceso al registry local del host. Sin este paso, los pods quedarán
     # en estado ErrImageNeverPull indefinidamente.
     # ------------------------------------------------------------------
-    log_step "Paso 2/5 — Construyendo imagen Docker del backend..."
+    log_step "Paso 2/6 — Construyendo imagen Docker del backend..."
     docker build -t "$BACKEND_IMAGE" "$BACKEND_SRC"
     log_success "Imagen '${BACKEND_IMAGE}' construida."
 
@@ -127,7 +127,7 @@ cmd_up() {
 
     # ------------------------------------------------------------------
     # PASO 3: Instalar Vertical Pod Autoscaler (VPA) via Helm
-    # Es necesario que los CRDs de VPA existan ANTES de aplicar k8s/07-autoscaling
+    # Es necesario que los CRDs de VPA existan ANTES de aplicar k8s/05-autoscaling
     # ------------------------------------------------------------------
     log_step "Paso 3/6 — Verificando Vertical Pod Autoscaler (VPA)..."
     if helm status vpa --namespace vpa &>/dev/null; then

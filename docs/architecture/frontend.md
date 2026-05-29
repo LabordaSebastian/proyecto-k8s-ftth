@@ -49,7 +49,7 @@ Con el ConfigMap, el mismo cambio requiere únicamente:
 ```bash
 kubectl edit configmap ftth-dashboard-html
 # O con un archivo actualizado:
-kubectl apply -f k8s/02-storage/frontend-configmap.yaml
+kubectl apply -f k8s/01-storage/frontend-configmap.yaml
 ```
 
 !!! info "Cómo funciona el ConfigMap como volumen"
@@ -171,13 +171,13 @@ Aplica el ConfigMap primero para que esté disponible antes de que los Pods arra
 
 ```bash
 # Paso 1: Aplicar el ConfigMap
-kubectl apply -f k8s/02-storage/frontend-configmap.yaml
+kubectl apply -f k8s/01-storage/frontend-configmap.yaml
 
 # Paso 2: Aplicar el Deployment
-kubectl apply -f k8s/03-deployments/frontend-deployment.yaml
+kubectl apply -f k8s/02-deployments/frontend-deployment.yaml
 
 # Paso 3: Aplicar el Service
-kubectl apply -f k8s/05-services/frontend-service.yaml
+kubectl apply -f k8s/03-services/frontend-service.yaml
 ```
 
 ### Verificar el estado
@@ -203,7 +203,7 @@ Para modificar el HTML sin reconstruir la imagen:
 kubectl edit configmap ftth-dashboard-html
 
 # O aplicar el archivo modificado localmente
-kubectl apply -f k8s/02-storage/frontend-configmap.yaml
+kubectl apply -f k8s/01-storage/frontend-configmap.yaml
 ```
 
 !!! tip "Propagación del cambio"

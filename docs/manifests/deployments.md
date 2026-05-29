@@ -1,6 +1,6 @@
 # Deployments
 
-Esta sección documenta todos los recursos de tipo `Deployment` y `CronJob` ubicados en `k8s/03-deployments/`. Son los Workloads principales del clúster: los procesos que corren indefinidamente (o periódicamente) para dar vida a la plataforma FTTH.
+Esta sección documenta todos los recursos de tipo `Deployment` y `CronJob` ubicados en `k8s/02-deployments/`. Son los Workloads principales del clúster: los procesos que corren indefinidamente (o periódicamente) para dar vida a la plataforma FTTH.
 
 ## Resumen de Workloads
 
@@ -19,7 +19,7 @@ Esta sección documenta todos los recursos de tipo `Deployment` y `CronJob` ubic
 
 ## Frontend Deployment
 
-**Archivo:** `k8s/03-deployments/frontend-deployment.yaml`
+**Archivo:** `k8s/02-deployments/frontend-deployment.yaml`
 
 ```yaml
 apiVersion: apps/v1
@@ -114,7 +114,7 @@ Cuando K8s decide terminar un Pod, el orden es: (1) ejecuta `preStop`, (2) enví
 
 ## Backend Deployment
 
-**Archivo:** `k8s/03-deployments/backend-deployment.yaml`
+**Archivo:** `k8s/02-deployments/backend-deployment.yaml`
 
 ```yaml
 apiVersion: apps/v1
@@ -214,7 +214,7 @@ El `sleep 30` dentro del hook `preStop` retrasa el envío de `SIGTERM` al proces
 
 ## PodDisruptionBudgets
 
-**Archivo:** `k8s/03-deployments/pod-disruption-budgets.yaml`
+**Archivo:** `k8s/02-deployments/pod-disruption-budgets.yaml`
 
 ```yaml
 apiVersion: policy/v1
@@ -256,7 +256,7 @@ Ambos son equivalentes cuando hay 2 réplicas (`minAvailable: 1` = `maxUnavailab
 
 ## Redis Deployment
 
-**Archivo:** `k8s/03-deployments/redis-deployment.yaml`
+**Archivo:** `k8s/02-deployments/redis-deployment.yaml`
 
 ```yaml
 apiVersion: apps/v1
@@ -311,7 +311,7 @@ spec:
 
 ## Network Checker CronJob
 
-**Archivo:** `k8s/03-deployments/network-checker-cronjob.yaml`
+**Archivo:** `k8s/02-deployments/network-checker-cronjob.yaml`
 
 ```yaml
 apiVersion: batch/v1
@@ -385,10 +385,10 @@ El orden de aplicación importa: el ConfigMap del Frontend debe existir antes de
 
 ```bash
 # Paso 1: ConfigMap (dependencia del Frontend)
-kubectl apply -f k8s/02-storage/frontend-configmap.yaml
+kubectl apply -f k8s/01-storage/frontend-configmap.yaml
 
 # Paso 2: Todos los Deployments y CronJob
-kubectl apply -f k8s/03-deployments/
+kubectl apply -f k8s/02-deployments/
 ```
 
 ### Verificar el estado de todos los Workloads

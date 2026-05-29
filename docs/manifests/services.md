@@ -1,6 +1,6 @@
 # Services
 
-Esta sección documenta los tres recursos de tipo `Service` ubicados en `k8s/05-services/`. Los Services son la capa de red de Kubernetes: resuelven el problema fundamental de que las IPs de los Pods son **efímeras** (cambian cada vez que un Pod se reinicia) y proporcionan un punto de acceso estable y con balanceo de carga hacia los Workloads.
+Esta sección documenta los tres recursos de tipo `Service` ubicados en `k8s/03-services/`. Los Services son la capa de red de Kubernetes: resuelven el problema fundamental de que las IPs de los Pods son **efímeras** (cambian cada vez que un Pod se reinicia) y proporcionan un punto de acceso estable y con balanceo de carga hacia los Workloads.
 
 ## Resumen de Services
 
@@ -35,7 +35,7 @@ graph LR
 
 ## Frontend Service — NodePort
 
-**Archivo:** `k8s/05-services/frontend-service.yaml`
+**Archivo:** `k8s/03-services/frontend-service.yaml`
 
 ```yaml
 apiVersion: v1
@@ -84,7 +84,7 @@ El Frontend tiene `replicas: 2`. El Service distribuye las peticiones entrantes 
 
 ## Backend Service — ClusterIP
 
-**Archivo:** `k8s/05-services/backend-service.yaml`
+**Archivo:** `k8s/03-services/backend-service.yaml`
 
 ```yaml
 apiVersion: v1
@@ -136,7 +136,7 @@ ftth-backend-service    10.244.1.5:5000,10.244.1.6:5000   10m
 
 ## Redis Service — ClusterIP
 
-**Archivo:** `k8s/05-services/redis-service.yaml`
+**Archivo:** `k8s/03-services/redis-service.yaml`
 
 ```yaml
 apiVersion: v1
@@ -199,7 +199,7 @@ Donde `default` es el namespace y `cluster.local` es el dominio del clúster. La
 ### Aplicar todos los Services
 
 ```bash
-kubectl apply -f k8s/05-services/
+kubectl apply -f k8s/03-services/
 ```
 
 ### Verificar el estado de los Services

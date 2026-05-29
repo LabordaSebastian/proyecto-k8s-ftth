@@ -29,14 +29,14 @@ Esta sección sirve como **material de repaso acelerado** orientado a la certifi
 
 - **¿Qué es?** Un controlador avanzado que ajusta automáticamente los `requests` y `limits` (CPU/Memoria) de los contenedores basándose en su uso real en el tiempo.
 - **¿Para qué sirve?** Evita el adivinar recursos. En lugar de escalar agregando más réplicas (como el HPA), el VPA escala inyectando más recursos a las réplicas existentes. Si un pod se queda corto, el VPA lo evicta (mata) y su Admission Controller inyecta los nuevos recursos cuando el pod se recrea.
-- **Caso de uso en el proyecto:** Implementado en `k8s/07-autoscaling/redis-vpa.yaml` (`updateMode: "Auto"`). Durante pruebas de estrés, el VPA detectó falta de memoria en la base de datos, mató el pod y lo reinició con límites más altos (250Mi) automáticamente.
+- **Caso de uso en el proyecto:** Implementado en `k8s/05-autoscaling/redis-vpa.yaml` (`updateMode: "Auto"`). Durante pruebas de estrés, el VPA detectó falta de memoria en la base de datos, mató el pod y lo reinició con límites más altos (250Mi) automáticamente.
 - **Trampa CKA:** El VPA y el HPA no deben usarse juntos sobre la misma métrica (ej. CPU). Además, el VPA siempre requiere que el Metrics Server esté operativo en el clúster.
 
 ### 3. Horizontal Pod Autoscaler (HPA) y Cooldown
 
 - **¿Qué es?** Un recurso de la API de K8s que actualiza automáticamente un recurso de carga de trabajo (Deployment o StatefulSet), escalando la cantidad de réplicas para igualar la demanda.
 - **¿Para qué sirve?** Para absorber picos de tráfico. Si el tráfico sube, crea más pods. Si baja, los destruye. 
-- **Caso de uso en el proyecto:** Implementado en `k8s/07-autoscaling/backend-hpa.yaml` para mantener la CPU del backend al 70%. En nuestra validación empírica, ante un ataque con `wget`, el HPA escaló las réplicas de 2 a 5.
+- **Caso de uso en el proyecto:** Implementado en `k8s/05-autoscaling/backend-hpa.yaml` para mantener la CPU del backend al 70%. En nuestra validación empírica, ante un ataque con `wget`, el HPA escaló las réplicas de 2 a 5.
 - **Trampa CKA (Thrashing & Cooldown):** En el examen, si detienes la carga de un pod, verás que el HPA **no reduce los pods de inmediato**. Kubernetes implementa por defecto un *Scale Down Stabilization Window* de 5 minutos para evitar el *thrashing* (crear y destruir pods constantemente por fluctuaciones rápidas).
 
 ### 2. Services: ClusterIP vs NodePort

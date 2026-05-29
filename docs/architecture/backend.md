@@ -212,7 +212,7 @@ docker build -t ftth-backend:v1 ./src/backend/
 kind load docker-image ftth-backend:v1 --name ftth-cluster
 
 # 3. Kubernetes encuentra la imagen localmente gracias a imagePullPolicy: Never
-kubectl apply -f k8s/03-deployments/backend-deployment.yaml
+kubectl apply -f k8s/02-deployments/backend-deployment.yaml
 ```
 
 !!! warning "Este patrón es exclusivo de entornos locales"
@@ -376,8 +376,8 @@ kind load docker-image ftth-backend:v1 --name ftth-cluster
 ### Aplicar los recursos
 
 ```bash
-kubectl apply -f k8s/03-deployments/backend-deployment.yaml
-kubectl apply -f k8s/05-services/backend-service.yaml
+kubectl apply -f k8s/02-deployments/backend-deployment.yaml
+kubectl apply -f k8s/03-services/backend-service.yaml
 ```
 
 ### Verificar el estado

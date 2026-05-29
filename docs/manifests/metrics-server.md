@@ -1,6 +1,6 @@
 # Metrics Server
 
-Esta sección documenta el manifiesto ubicado en `k8s/06-metrics/metrics-server.yaml`. El Metrics Server es un componente de infraestructura del clúster, no de la aplicación FTTH. Habilita la API de métricas de Kubernetes, lo que permite usar `kubectl top` para observar el consumo real de CPU y memoria de los Pods y nodos.
+Esta sección documenta el manifiesto ubicado en `k8s/04-metrics/metrics-server.yaml`. El Metrics Server es un componente de infraestructura del clúster, no de la aplicación FTTH. Habilita la API de métricas de Kubernetes, lo que permite usar `kubectl top` para observar el consumo real de CPU y memoria de los Pods y nodos.
 
 !!! info "Namespace: `kube-system`"
     A diferencia de los Workloads de la aplicación (que viven en el namespace `default`), el Metrics Server se instala en el namespace `kube-system`. Este namespace está reservado para los componentes del sistema de Kubernetes (CoreDNS, kube-proxy, etc.). Aislar los componentes de infraestructura en `kube-system` es una práctica estándar de seguridad y organización.
@@ -361,7 +361,7 @@ Cuando ejecutas `kubectl top`, el API Server recibe la petición, ve que `metric
 ### Aplicar el Metrics Server
 
 ```bash
-kubectl apply -f k8s/06-metrics/metrics-server.yaml
+kubectl apply -f k8s/04-metrics/metrics-server.yaml
 ```
 
 ### Verificar que el Metrics Server está operativo
