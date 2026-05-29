@@ -78,10 +78,9 @@ def main():
         
     report_md = generate_report()
     
-    # Escribir a docs
-    docs_dir = os.path.join(os.path.dirname(HARNESS_DIR), "docs", "harness-engineering")
-    os.makedirs(docs_dir, exist_ok=True)
-    out_path = os.path.join(docs_dir, "health-report.md")
+    # Escribir a la raíz del proyecto
+    project_root = os.path.dirname(HARNESS_DIR)
+    out_path = os.path.join(project_root, "STATUS.md")
     
     with open(out_path, "w") as f:
         f.write(report_md)

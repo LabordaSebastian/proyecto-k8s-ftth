@@ -85,7 +85,24 @@ A diferencia de los agentes técnicos que corren en paralelo proponiendo solucio
 4. **Validación**: Una vez aplicados, el **Validation Agent** revisa los logs y el nuevo endpoint en el clúster.
 5. **Documentación**: El **Documentation Agent** se activa automáticamente y añade la documentación técnica del cambio.
 
-### Verificar el estado
+### Verificar el estado (Health Report)
+
+El estado de salud del sistema, métricas, recursos y agentes se mantiene en un archivo local llamado `STATUS.md` en la raíz del proyecto (ignorado por Git). Este reporte es para consumo interno y se regenera automáticamente sin interferir con la documentación pública.
+
+**Automatizaciones del STATUS.md:**
+- Se regenera de forma transparente en segundo plano cada vez que haces un `git commit` o un `git push` gracias a Git Hooks locales.
+- Se regenera automáticamente cada vez que el sistema registra o altera memoria (usando `harness-write.py`).
+
+Para generarlo manualmente en cualquier momento, ejecuta:
+```bash
+python3 .harness/scripts/harness-report.py
+```
+
+**Manejo de Alertas Críticas:**
+Si el reporte muestra "Alertas Críticas" (Lessons Learned), puedes eliminarlas una vez que hayas resuelto el problema subyacente para limpiar el Health Report:
+```bash
+python3 .harness/scripts/harness-write.py delete-lesson --lesson-id <ID>
+```
 
 Para inspeccionar la configuración y los contratos de cada agente, se pueden consultar sus protocolos individuales:
 

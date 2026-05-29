@@ -58,7 +58,6 @@ nav:
       - harness-engineering/index.md
       - Anatomía de los Agentes: harness-engineering/agents.md
       - HarnessDB (Memoria Persistente): harness-engineering/harness-db.md
-      - Health Report (Analytics): harness-engineering/health-report.md
   - Manifiestos K8s:
       - manifests/index.md
       - Deployments: manifests/deployments.md

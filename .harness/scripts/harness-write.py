@@ -81,6 +81,18 @@ def write_lesson(args):
     print(f"✅ Lección registrada: #{row_id} — {args.title}")
 
 
+def delete_lesson(args):
+    conn = get_conn()
+    cur = conn.execute("DELETE FROM lessons_learned WHERE id = ?", (args.lesson_id,))
+    conn.commit()
+    deleted = cur.rowcount > 0
+    conn.close()
+    if deleted:
+        print(f"✅ Lección #{args.lesson_id} eliminada exitosamente.")
+    else:
+        print(f"⚠️ No se encontró la lección #{args.lesson_id}.")
+
+
 # ─── RESOURCE ────────────────────────────────────────────────────────
 
 def write_resource(args):
@@ -251,6 +263,10 @@ def main():
     les.add_argument("--severity", choices=["critical", "warning", "info"], default="info")
     les.add_argument("--tags", help="Comma-separated tags")
 
+    # Delete Lesson
+    dl = subparsers.add_parser("delete-lesson", help="Eliminar una lección aprendida")
+    dl.add_argument("--lesson-id", type=int, required=True)
+
     # Resource
     res = subparsers.add_parser("resource", help="Registrar un recurso K8s")
     res.add_argument("--kind", required=True)
@@ -318,6 +334,7 @@ def main():
     commands = {
         "decision": write_decision,
         "lesson": write_lesson,
+        "delete-lesson": delete_lesson,
         "resource": write_resource,
         "activity": write_activity,
         "snapshot": write_snapshot,
@@ -329,6 +346,11 @@ def main():
     }
 
     commands[args.command](args)
+    
+    # Auto-update STATUS.md
+    report_script = os.path.join(SCRIPT_DIR, "harness-report.py")
+    if os.path.exists(report_script):
+        os.system(f"python3 {report_script} > /dev/null 2>&1")
 
 
 if __name__ == "__main__":
