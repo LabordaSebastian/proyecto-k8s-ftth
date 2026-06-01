@@ -67,6 +67,15 @@ Evita que el usuario tenga que decidir qué agente usar en cada paso. El Orquest
 #### ¿Por qué el Documentation Agent es un paso secuencial obligatorio?
 A diferencia de los agentes técnicos que corren en paralelo proponiendo soluciones, la documentación es una consecuencia de esas soluciones. El Documentation Agent actúa como un *hook* final, garantizando que el conocimiento del proyecto (`docs/`) nunca quede desactualizado respecto al código.
 
+### Manejo de Contexto y Memoria (CodeGraph + HarnessDB)
+
+El sistema para mantener el contexto y la memoria de las decisiones se basa en una arquitectura de **doble capa**, asegurando que los agentes comprendan el estado del proyecto sin releer todo el código:
+
+1. **CodeGraph (La Memoria Estructural):** Entiende la "física" del repositorio (archivos, dependencias y relaciones). Vive en `.codegraph/codegraph.db`. Se consulta antes de cada tarea con `.opencode/scripts/codegraph-summary.py` y es obligatorio actualizarlo con `npx @colbymchenry/codegraph sync` ante cualquier cambio estructural (archivos nuevos, eliminados, etc).
+2. **HarnessDB (La Memoria Semántica):** Sabe *por qué* están las cosas ahí y qué lecciones se aprendieron. Vive en `.harness/harness.db`. Se lee ejecutando `.harness/scripts/harness-session.py` para obtener un *Session Brief* (decisiones activas, lecciones aprendidas, actividad reciente). Se actualiza obligatoriamente al finalizar cada tarea usando `.harness/scripts/harness-write.py` para registrar `activity`, `decision` o `lesson`.
+
+Este flujo unificado (**leer CodeGraph → leer HarnessDB → ejecutar tarea → escribir HarnessDB → sincronizar CodeGraph**) permite que la inteligencia colectiva de los agentes aumente iterativamente con cada intervención.
+
 !!! info "Fase actual de implementación"
     El proyecto ya ha inicializado formalmente a los agentes y separado sus dominios en `.gemini/skills/` para Gemini (Antygravity) y `.opencode/skills/` para opencode. Los skills de opencode son "thin" y referencian el contenido de `.gemini/skills/` como fuente de verdad única. Esto provee una base firme, reglas claras y sincronización automática entre plataformas para que la IA colabore sin romper el estilo del código o de la infraestructura.
 
