@@ -372,3 +372,8 @@ Al agregar cualquier recurso aquí, actualizar también `docs/security/`.
    - **El error:** Un `Service` no enruta tráfico a los pods y devuelve *Connection Refused*, a pesar de que los pods están `Running`.
    - **La causa:** El bloque `selector:` del Service no coincide **exactamente** con los `labels:` del PodTemplate en el Deployment.
    - **La regla:** Antes de entregar un Service + Deployment, copia el bloque `labels` del Deployment y pégalo directamente en el `selector` del Service. No los escribas dos veces.
+
+2. **Hardcoding de Secretos (Fallo de Seguridad GitGuardian):**
+   - **El error:** Comitear un manifiesto `Secret` (ej. `registry-secret.yaml`) que contenga contraseñas, tokens o datos codificados en base64.
+   - **La causa:** Subir al repositorio Git archivos con alta entropía o estructuras de credenciales (como `kubernetes.io/dockerconfigjson`), lo que dispara alertas de seguridad.
+   - **La regla estricta:** **NUNCA** subas archivos YAML de `Secret` con datos base64 o contraseñas reales al repositorio. Si es obligatorio crear uno para probar localmente, asegúrate de añadirlo al `.gitignore` o proveer solo un `.example` vacío. El manejo real se delega a sistemas externos (Sealed Secrets, Vault).
