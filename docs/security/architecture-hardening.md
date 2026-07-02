@@ -63,8 +63,54 @@ roleRef:
 #### ¿Por qué `automountServiceAccountToken: false`?
 Por defecto, Kubernetes inyecta el token de seguridad del API Server en cada pod que se levanta. Si un atacante compromete el pod de Nginx, podría usar ese token para hablar con el clúster. Al deshabilitarlo a nivel de ServiceAccount y Pod, aseguramos que las credenciales solo se inyecten donde explícitamente se requieran mediante volúmenes proyectados.
 
+### Inyección Segura de Credenciales — `k8s/02-deployments/frontend-deployment.yaml`
+
+```yaml
+    spec:
+       serviceAccountName: ftth-frontend-sa
+       automountServiceAccountToken: false
+       containers:
+       # ...
+       # --- Montamos el volumen en la ruta de Nginx ---
+         volumeMounts:
+         - mountPath: /var/run/secrets/kubernetes.io/serviceaccount/
+           name: token
+           readOnly: true
+       # ...
+       # --- Definimos de dónde sale el volumen ---
+       volumes:
+       - name: token
+         projected:
+           sources:
+           - serviceAccountToken:
+               path: token
+```
+
 !!! info "Projected Volumes"
     En el `frontend-deployment.yaml`, el token se monta explícitamente usando la técnica de `projected` volume, forzando su ruta física exacta (`/var/run/secrets/kubernetes.io/serviceaccount/`).
+
+### Restricciones de Contexto y Registry — `k8s/02-deployments/backend-deployment.yaml`
+
+```yaml
+    spec:
+       imagePullSecrets:
+       - name: ftth-registry-secret
+       securityContext:
+         runAsUser: 1000
+         runAsGroup: 3000
+         fsGroup: 2000
+       containers:
+       - name: python-api
+         image: ftth-backend:v1
+         securityContext:
+           allowPrivilegeEscalation: false
+           capabilities:
+             drop:
+             - ALL
+```
+
+#### ¿Por qué `runAsUser: 1000` y `drop: ["ALL"]`?
+Por defecto, los procesos dentro de un contenedor se ejecutan como el usuario `root` (UID 0). Si la aplicación es vulnerada, el atacante obtiene privilegios de administrador. Al forzar un usuario no privilegiado (UID 1000), bloquear la escalación de privilegios (`allowPrivilegeEscalation: false`) y eliminar todas las `capabilities` del kernel, mitigamos el riesgo de que un atacante pueda escapar del contenedor hacia el nodo host.
 
 ### Aislamiento de Red — `k8s/04-security/redis-networkpolicy.yaml`
 
