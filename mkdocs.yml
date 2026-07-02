@@ -73,6 +73,7 @@ nav:
   - Seguridad:
       - security/index.md
       - Cifrado en Reposo (etcd): security/encryption-at-rest.md
+      - Endurecimiento de Arquitectura: security/architecture-hardening.md
   - Skills:
       - skills/index.md
       - Guía de Estilo de Documentación: skills/doc-style-guide.md

@@ -1,0 +1,8 @@
+apiVersion: infrastructure.ftth.com/v1
+kind: OltProfile
+metadata:
+  name: huawei-ma5800
+spec:
+  manufacturer: "Huawei"
+  maxBandwidthGbps: 40
+  uplinkPorts: 4

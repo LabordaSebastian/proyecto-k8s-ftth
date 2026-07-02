@@ -20,6 +20,8 @@ spec:
       labels:
         app: ftth-frontend
     spec:
+       serviceAccountName: ftth-frontend-sa
+       automountServiceAccountToken: false
        containers:
        - name: nginx-web
          image: nginx:alpine
@@ -54,10 +56,18 @@ spec:
                command: ["/bin/sh", "-c", "sleep 30"]
        # --- Montamos el volumen en la ruta de Nginx ---
          volumeMounts:
+         - mountPath: /var/run/secrets/kubernetes.io/serviceaccount/
+           name: token
+           readOnly: true
          - name: html-volume
            mountPath: /usr/share/nginx/html
        # --- Definimos de dónde sale el volumen ---
        volumes:
+       - name: token
+         projected:
+           sources:
+           - serviceAccountToken:
+               path: token
        - name: html-volume
          configMap:
            name: ftth-dashboard-html

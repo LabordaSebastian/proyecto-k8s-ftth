@@ -1,0 +1,8 @@
+apiVersion: infrastructure.ftth.com/v1
+kind: OltProfile
+metadata:
+  name: zte-c600
+spec:
+  manufacturer: "ZTE"
+  maxBandwidthGbps: 400 # ¡Inválido! El máximo es 100
+  uplinkPorts: 12       # ¡Inválido! El máximo es 8
