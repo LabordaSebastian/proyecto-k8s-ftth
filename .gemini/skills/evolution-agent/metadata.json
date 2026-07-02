@@ -1,4 +1,0 @@
-{
-  "description": "Skill Evolution Agent — Se encarga de auditar los skills actuales de los agentes contra la memoria de HarnessDB, detectando cuando un skill quedó desactualizado respecto a las nuevas decisiones o lecciones aprendidas.",
-  "title": "Evolution Agent"
-}

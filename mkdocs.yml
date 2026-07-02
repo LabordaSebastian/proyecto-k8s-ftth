@@ -58,6 +58,7 @@ nav:
       - harness-engineering/index.md
       - Anatomía de los Agentes: harness-engineering/agents.md
       - HarnessDB (Memoria Persistente): harness-engineering/harness-db.md
+      - ADR 001 - Unificación de Skills: harness-engineering/adr-001-unification-skills.md
   - Manifiestos K8s:
       - manifests/index.md
       - Deployments: manifests/deployments.md

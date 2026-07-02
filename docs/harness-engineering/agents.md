@@ -4,12 +4,7 @@
 
 El sistema Harness Engineering del proyecto está compuesto por 6 agentes especializados, cada uno con un contexto acotado y un protocolo de comunicación claro. Estos agentes están implementados para dos plataformas:
 
-| Plataforma | Configuración | Formato |
-|---|---|---|
-| **Antygravity** (Gemini) | `.gemini/skills/` | `metadata.json` + `agent_protocol.md` + `*_skill.md` |
-| **opencode** | `.opencode/skills/` + `AGENTS.md` + `opencode.json` | `SKILL.md` (thin → referencia a `.gemini/skills/`) |
-
-Independientemente de la plataforma, los agentes son los mismos, tienen el mismo rol y siguen el mismo flujo de trabajo.
+El estándar universal del proyecto centraliza todos los agentes en el directorio nativo `.gemini/skills/`, utilizando el formato `SKILL.md` con frontmatter YAML. Ambas plataformas (Opencode y Gemini/Antigravity) leen desde esta única fuente de la verdad.
 
 ---
 
@@ -105,58 +100,21 @@ El **guardián del conocimiento**. Actúa como un *hook* (evento disparador) aut
 
 ## Estructura de Archivos
 
-Cada plataforma organiza los archivos de configuración de los agentes de forma distinta, pero el contenido del conocimiento de dominio es el mismo.
-
-### Gemini (Antygravity)
-
-```
-.gemini/skills/
-├── orquestador/                          ← (implícito en el sistema de prompts de Gemini)
-├── infrastructure-agent/
-│   ├── metadata.json                     ← metadatos del agente
-│   └── artifacts/
-│       ├── agent_protocol.md             ← protocolo de operación
-│       └── infra_skill.md               ← conocimiento de dominio K8s
-├── application-agent/
-│   ├── metadata.json
-│   └── artifacts/
-│       ├── agent_protocol.md
-│       └── app_skill.md                 ← conocimiento de dominio Flask/Nginx
-├── cicd-agent/
-│   ├── metadata.json
-│   └── artifacts/
-│       ├── agent_protocol.md
-│       └── cicd_skill.md               ← conocimiento de dominio CI/CD
-├── validation-agent/
-│   ├── metadata.json
-│   └── artifacts/
-│       └── agent_protocol.md
-    └── artifacts/
-        ├── agent_protocol.md
-        └── doc_skill.md
-└── cka-mentor/                           ← tutor teórico CKA
-    ├── metadata.json
-    └── artifacts/
-        ├── agent_protocol.md
-        └── cka_skill.md                  ← 5 dominios del examen CKA
-```
-
-### opencode
+Todos los agentes están consolidados en el directorio unificado `.gemini/skills/`.
 
 ```
 .
-├── opencode.json                         ← configuración raíz
+├── opencode.json                         ← configuración que apunta a .gemini/skills/
 ├── AGENTS.md                             ← orquestador (instrucciones del sistema)
-└── .opencode/
-    ├── scripts/
-    │   └── codegraph-summary.py          ← consulta .codegraph/codegraph.db
-    └── skills/
-        ├── project-context/SKILL.md      ← carga estructura del proyecto desde CodeGraph
-        ├── infrastructure/SKILL.md       ← thin → .gemini/skills/infrastructure-agent/
-        ├── application/SKILL.md          ← thin → .gemini/skills/application-agent/
-        ├── cicd/SKILL.md                 ← thin → .gemini/skills/cicd-agent/
-        ├── validation/SKILL.md           ← thin → .gemini/skills/validation-agent/
-        └── documentation/SKILL.md        ← thin → .gemini/skills/documentation-agent/ + k8s-ftth-docs-style/
+└── .gemini/skills/
+    ├── infrastructure-agent/SKILL.md     ← conocimiento, convención y protocolo unificado
+    ├── application-agent/SKILL.md
+    ├── cicd-agent/SKILL.md
+    ├── validation-agent/SKILL.md
+    ├── documentation-agent/SKILL.md
+    ├── evolution-agent/SKILL.md
+    ├── cka-mentor/SKILL.md
+    └── harness-memory/SKILL.md
 ```
 
 ---
@@ -165,16 +123,6 @@ Cada plataforma organiza los archivos de configuración de los agentes de forma 
 
 ### Inspección de la Configuración Interna
 
-**Gemini (Antygravity):**
-```bash
-# Ver metadatos del Application Agent
-cat .gemini/skills/application-agent/metadata.json
-
-# Ver conocimiento de dominio del Infrastructure Agent
-cat .gemini/skills/infrastructure-agent/artifacts/infra_skill.md
-```
-
-**opencode:**
 ```bash
 # Ver el orquestador (instrucciones del sistema)
 cat AGENTS.md
@@ -182,16 +130,15 @@ cat AGENTS.md
 # Ver la configuración raíz
 cat opencode.json
 
-# Ver un skill thin (ej: infrastructure)
-cat .opencode/skills/infrastructure/SKILL.md
+# Ver el conocimiento de dominio unificado de un agente
+cat .gemini/skills/application-agent/SKILL.md
 ```
 
 ### Modificación y Evolución de un Agente
 
 Para alterar o mejorar el comportamiento de un agente, debes ajustar sus archivos de definición:
 
-1. **Si quieres que aprenda una nueva convención técnica** (ej. cómo escribir un StatefulSet): Edita su archivo `*_skill.md` (Gemini) → opencode lo toma automáticamente.
-2. **Si quieres que se active bajo nuevas condiciones** (ej. que responda a comandos de Terraform): Edita su archivo `agent_protocol.md`.
+1. **Si quieres modificar el conocimiento o el comportamiento**: Edita su archivo `SKILL.md` unificado en `.gemini/skills/`.
 
 !!! warning "Restricción de Contexto"
     Nunca le agregues instrucciones de código Python al `infra_skill.md`, ni comandos de Kubernetes al `app_skill.md`. Mantener las responsabilidades estrictamente separadas es la clave de Harness Engineering.
@@ -205,8 +152,8 @@ Tutor teórico de Kubernetes orientado al examen **CKA**. Responde consultas con
 
 #### Contexto y Archivos Asignados
 - **Dominio**: Los 5 dominios del examen CKA (Cluster Architecture, Workloads, Services, Storage, Troubleshooting).
-- **Conocimiento Base**: `.gemini/skills/cka-mentor/artifacts/cka_skill.md`
-- **Protocolo**: `.gemini/skills/cka-mentor/artifacts/agent_protocol.md`
+- **Conocimiento Base**: `.gemini/skills/cka-mentor/SKILL.md`
+- **Protocolo**: `.gemini/skills/cka-mentor/SKILL.md`
 
 #### Activación
 - **Trigger**: "Explicame", "qué es", "cómo funciona", "diferencia entre", "dominio CKA".
@@ -235,33 +182,21 @@ Esta separación ("la máquina escribe y prueba, el humano absorbe el concepto")
 
 ---
 
-## Implementación en opencode
+## Arquitectura Unificada
 
-### Skills Thin — Sincronización Automática
+### Única Fuente de Verdad (Single Source of Truth)
 
-Los skills de opencode son **thin**: su contenido no duplica el conocimiento de dominio, sino que instruyen al Orquestador leer los archivos fuente de `.gemini/skills/`. Esto garantiza:
+Anteriormente se mantenía una dualidad de archivos entre `.gemini/skills` y `.opencode/skills`. Esta arquitectura fue modernizada: ahora **TODOS** los agentes viven de forma consolidada en la carpeta nativa `.gemini/skills/`, utilizando el formato estándar y universal `SKILL.md`.
 
-- **Actualización automática**: si se edita un skill en Gemini, opencode toma la nueva versión en la próxima carga
-- **Cero duplicación**: el conocimiento de dominio vive una sola vez en `.gemini/skills/`
-- **Independencia de plataforma**: Antygravity y opencode comparten la misma fuente de verdad
-
-!!! danger "Regla Obligatoria de Sincronización"
-    Si solicitas crear un **nuevo agente**, debes verificar siempre que se creen los archivos en **ambas plataformas**:
-    1. En `.gemini/skills/<agente>/` (Archivos reales: metadata y artifacts).
-    2. En `.opencode/skills/<agente>/SKILL.md` (El espejo "thin").
-    **NUNCA** debes crear un agente en un solo ecosistema. Mantener la simetría es vital para evitar fallas de contexto.
-
-```
-.gemini/skills/infrastructure-agent/artifacts/infra_skill.md  ← fuente de verdad
-.opencode/skills/infrastructure/SKILL.md                       ← thin: "leé el archivo de arriba"
-```
+- **Cero duplicación**: Las configuraciones duales fueron eliminadas.
+- **Simetría perfecta**: Si agregas, modificas o borras un agente en `.gemini/skills/`, el cambio impacta automáticamente en ambas plataformas.
 
 ### CodeGraph — Carga y Mantenimiento del Contexto
 
 Al iniciar cada sesión, el Orquestador ejecuta:
 
 ```bash
-python3 .opencode/scripts/codegraph-summary.py
+python3 .harness/scripts/codegraph-summary.py
 ```
 
 Esto consulta `.codegraph/codegraph.db` (SQLite) y devuelve la estructura indexada del proyecto (archivos, nodos, relaciones). Reemplaza la exploración manual de directorios, ahorrando tokens.
@@ -276,7 +211,7 @@ Se ha instruido al Orquestador para que, si durante su trabajo realiza cambios e
 2. Orquestador ejecuta codegraph-summary.py → contexto del proyecto
 3. Determina el dominio (infra/app/cicd/validation/docs)
 4. Carga skill correspondiente con tool skill(name="<dominio>")
-5. El skill indica qué archivos .gemini/skills/<agente>/artifacts/ leer
+5. El skill indica qué archivos .gemini/skills/<agente>/SKILL.md leer
 6. Lee esos archivos (contenido vivo, siempre actualizado)
 7. Delega a task(subagent_type="general") con rol + skill content + pedido
 8. Sub-agente devuelve propuesta
@@ -287,7 +222,5 @@ Se ha instruido al Orquestador para que, si durante su trabajo realiza cambios e
 
 | Escenario | Acción |
 |---|---|
-| Se actualiza un skill en Gemini | No requiere acción — opencode lee la nueva versión automáticamente |
-| Se agrega un nuevo agente en Gemini | Crear `.opencode/skills/<nuevo>/SKILL.md` apuntando a sus archivos |
-| Se elimina un agente en Gemini | Eliminar su skill correspondiente en `.opencode/skills/` |
+| Se crea, edita o elimina un skill | Hacerlo directamente en la carpeta nativa `.gemini/skills/` (impacta globalmente) |
 | Se crean o borran archivos en el proyecto | El Orquestador ejecuta `npx @colbymchenry/codegraph sync` automáticamente |

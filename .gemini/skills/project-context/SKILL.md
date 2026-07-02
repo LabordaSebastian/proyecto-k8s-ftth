@@ -7,7 +7,7 @@ description: "Use at the START of every session to load the indexed project stru
 
 When this skill is loaded:
 
-1. Run `python3 .opencode/scripts/codegraph-summary.py` to query `.codegraph/codegraph.db` and display the indexed project structure (files, nodes, relationships).
+1. Run `python3 .harness/scripts/codegraph-summary.py` to query `.codegraph/codegraph.db` and display the indexed project structure (files, nodes, relationships).
 
 2. Review the output to understand the current project layout without manually exploring directories.
 
