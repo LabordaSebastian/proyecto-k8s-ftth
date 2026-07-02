@@ -214,9 +214,13 @@ kubectl apply -f k8s/07-crds/oltprofile-example.yaml
 # Verificar ServiceAccount
 kubectl auth can-i list pods --as=system:serviceaccount:default:ftth-frontend-sa
 
-# Verificar Contexto de Seguridad
+# Verificar Contexto de Seguridad (Usuario y Capabilities)
 BACKEND_POD=$(kubectl get pods -l app=ftth-backend -o jsonpath='{.items[0].metadata.name}')
 kubectl exec $BACKEND_POD -- id
+kubectl exec $BACKEND_POD -- chown root:root /tmp  # Debe dar 'Operation not permitted'
+
+# Verificar NetworkPolicy (Conexión Legítima)
+kubectl exec -it $BACKEND_POD -- nc -vz ftth-redis-service 6379  # Debe dar 'open'
 
 # Verificar CRD
 kubectl get oltprofiles
