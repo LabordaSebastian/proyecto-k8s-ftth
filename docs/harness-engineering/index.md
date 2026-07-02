@@ -77,7 +77,7 @@ El sistema para mantener el contexto y la memoria de las decisiones se basa en u
 Este flujo unificado (**leer CodeGraph → leer HarnessDB → ejecutar tarea → escribir HarnessDB → sincronizar CodeGraph**) permite que la inteligencia colectiva de los agentes aumente iterativamente con cada intervención.
 
 !!! info "Fase actual de implementación"
-    El proyecto ya ha inicializado formalmente a los agentes y separado sus dominios en `.gemini/skills/` para Gemini (Antygravity) y `.opencode/skills/` para opencode. Los skills de opencode son "thin" y referencian el contenido de `.gemini/skills/` como fuente de verdad única. Esto provee una base firme, reglas claras y sincronización automática entre plataformas para que la IA colabore sin romper el estilo del código o de la infraestructura.
+    El proyecto ya ha inicializado formalmente a los agentes y separado sus dominios en `.gemini/skills/`. Esta es la única fuente de verdad universal para todas las IAs (Antigravity de forma nativa, y Opencode a través de su configuración). Esto provee una base firme, reglas claras y sincronización automática entre plataformas para que la IA colabore sin romper el estilo del código o de la infraestructura.
 
 ---
 
@@ -118,16 +118,16 @@ Para inspeccionar la configuración y los contratos de cada agente, se pueden co
 **Gemini (Antygravity):**
 ```bash
 # Ver el protocolo de operación del Infrastructure Agent
-cat .gemini/skills/infrastructure-agent/artifacts/agent_protocol.md
+cat .gemini/skills/infrastructure-agent/SKILL.md
 
 # Ver la knowledge base del Application Agent
-cat .gemini/skills/application-agent/artifacts/app_skill.md
+cat .gemini/skills/application-agent/SKILL.md
 ```
 
 **opencode:**
 ```bash
 # Ver el skill de infraestructura (thin que referencias a .gemini/)
-cat .opencode/skills/infrastructure/SKILL.md
+cat .gemini/skills/infrastructure-agent/SKILL.md
 
 # Ver las instrucciones del orquestador
 cat AGENTS.md
