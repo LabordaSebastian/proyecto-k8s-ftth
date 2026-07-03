@@ -144,6 +144,16 @@ cmd_up() {
     # PASO 4: Aplicar manifiestos de Kubernetes
     # ------------------------------------------------------------------
     log_step "Paso 4/6 — Aplicando manifiestos de Kubernetes..."
+    
+    # 4.1 Aplicar CRDs primero para evitar errores de mapeo (race conditions)
+    if find "$MANIFESTS_DIR" -type f -name "*crd*.yaml" | grep -q .; then
+        log_info "Pre-aplicando CustomResourceDefinitions (CRDs)..."
+        find "$MANIFESTS_DIR" -type f -name "*crd*.yaml" -exec kubectl apply -f {} +
+        log_info "Esperando 3s a que la API registre los CRDs..."
+        sleep 3
+    fi
+
+    # 4.2 Aplicar el resto de los manifiestos
     kubectl apply -R -f "$MANIFESTS_DIR"
     log_success "Manifiestos aplicados correctamente."
 

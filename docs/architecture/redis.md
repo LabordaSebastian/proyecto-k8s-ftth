@@ -10,6 +10,9 @@ A diferencia del Frontend y el Backend, el Pod de Redis **no puede ejecutarse en
 |---|---|---|
 | `Deployment` | `ftth-redis` | Gestiona la única réplica del motor de caché |
 | `Service` | `ftth-redis-service` | Expone el puerto `6379` internamente (ClusterIP) |
+| `StorageClass` | `local-storage` | Define la clase de almacenamiento local con `WaitForFirstConsumer` |
+| `PersistentVolume` | `redis-pv` | Reserva 1Gi de espacio físico en el nodo Worker |
+| `PersistentVolumeClaim` | `redis-data-pvc` | Reclama 500Mi del volumen persistente para el Deployment |
 
 El vínculo entre la infraestructura y el workload funciona así:
 
@@ -109,6 +112,33 @@ Cuando Kind crea el clúster, aplica esos labels al nodo Worker. El `kube-schedu
 
 ---
 
+### Almacenamiento Persistente — PV, PVC y StorageClass
+
+Redis cuenta con persistencia de datos local (Laboratorios 42 y 43).
+
+#### ¿Por qué usar StorageClass con `volumeBindingMode: WaitForFirstConsumer`?
+
+Si el almacenamiento local se enlazara inmediatamente (`Immediate`), el PVC podría atarse a un volumen en un nodo distinto al nodo donde el Scheduler decidirá correr el Pod de Redis. Al usar `WaitForFirstConsumer`, Kubernetes espera a que el Pod sea programado (considerando, por ejemplo, la regla de Node Affinity) y recién entonces enlaza el volumen local de esa misma máquina física.
+
+#### Manifiestos de Almacenamiento (`k8s/01-storage/`)
+
+Se utiliza un `PersistentVolume` atado al nodo mediante `nodeAffinity` y un `PersistentVolumeClaim` para que el Deployment lo reclame. El Pod monta el PVC en `/data` (directorio de datos de Redis) e inicia con el parámetro `--appendonly yes`.
+
+```yaml
+# redis-storageclass.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+```
+
+!!! info "Independencia de Roles (PV vs PVC)"
+    El PV representa la "oferta" física provista por el administrador, mientras que el PVC representa la "demanda" lógica del desarrollador. Separarlos permite que el manifiesto del Deployment sea portable a otros entornos o nubes.
+
+---
+
 ### Deployment — `redis-deployment.yaml`
 
 ```yaml
@@ -141,6 +171,7 @@ spec:
       containers:
       - name: redis-cache
         image: redis:alpine
+        command: ["redis-server", "--appendonly", "yes"]
         ports:
         - containerPort: 6379
         resources:
@@ -150,6 +181,13 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "100m"
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      volumes:
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: redis-data-pvc
 ```
 
 #### ¿Por qué `replicas: 1`?
