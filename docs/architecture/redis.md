@@ -114,7 +114,7 @@ Cuando Kind crea el clúster, aplica esos labels al nodo Worker. El `kube-schedu
 
 ### Almacenamiento Persistente — PV, PVC y StorageClass
 
-Redis cuenta con persistencia de datos local (Laboratorios 42 y 43).
+Redis cuenta con persistencia de datos local.
 
 #### ¿Por qué usar StorageClass con `volumeBindingMode: WaitForFirstConsumer`?
 
