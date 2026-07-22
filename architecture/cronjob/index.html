@@ -1,0 +1,2382 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentación técnica del laboratorio de Kubernetes para la preparación de la certificación CKA.">
+      
+      
+        <meta name="author" content="Sebastian Laborda">
+      
+      
+      
+        <link rel="prev" href="../redis/">
+      
+      
+        <link rel="next" href="../autoscaling/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Monitoreo de Red (CronJob) - Proyecto FTTH - Kubernetes PoC</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#agente-de-monitoreo-cronjob-network-checker" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Proyecto FTTH - Kubernetes PoC" class="md-header__button md-logo" aria-label="Proyecto FTTH - Kubernetes PoC" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Proyecto FTTH - Kubernetes PoC
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Monitoreo de Red (CronJob)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a modo oscuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Cambiar a modo oscuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Cambiar a modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Inicio
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Arquitectura
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../cka-concepts/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Conceptos Claves (CKA)
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../harness-engineering/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Harness Engineering
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../manifests/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Manifiestos K8s
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../operations/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Operaciones (CI/CD)
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../security/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Seguridad
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../skills/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Skills
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tools/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Herramientas
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Proyecto FTTH - Kubernetes PoC" class="md-nav__button md-logo" aria-label="Proyecto FTTH - Kubernetes PoC" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Proyecto FTTH - Kubernetes PoC
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inicio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/kind-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infraestructura Local (Kind)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/manage-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Script de Automatización
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitectura
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Arquitectura
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend (Nginx)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend (API Python)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../redis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base de Datos (Redis)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoreo de Red (CronJob)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoreo de Red (CronJob)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#vision-general" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visión General
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#desglose-tecnico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Desglose Técnico
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Desglose Técnico">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manifiesto-network-checker-cronjobyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manifiesto — network-checker-cronjob.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anatomia-de-un-cronjob-la-jerarquia-de-recursos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anatomía de un CronJob: La jerarquía de recursos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#la-expresion-schedule-sintaxis-cron" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La expresión schedule — Sintaxis CRON
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restartpolicy-onfailure-la-politica-de-reinicio-del-pod" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        restartPolicy: OnFailure — La política de reinicio del Pod
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#control-del-historial-de-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Control del historial de Jobs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#la-imagen-busybox-y-el-script-de-verificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La imagen busybox y el script de verificación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-requests-y-limits-minimos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Requests y Limits mínimos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#instrucciones-de-operacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instrucciones de Operación
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Instrucciones de Operación">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aplicar-el-recurso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aplicar el recurso
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verificar-el-estado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verificar el estado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ver-los-logs-de-una-ejecucion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ver los logs de una ejecución
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disparar-una-ejecucion-manual-inmediata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disparar una ejecución manual inmediata
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#suspender-y-reanudar-el-cronjob" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Suspender y reanudar el CronJob
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debugging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debugging
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autoscaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autoscaling (VPA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servidor DNS (CoreDNS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cka-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conceptos Claves (CKA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../harness-engineering/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harness Engineering
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Harness Engineering
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../harness-engineering/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anatomía de los Agentes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../harness-engineering/harness-db/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HarnessDB (Memoria Persistente)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../harness-engineering/adr-001-unification-skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 001 - Unificación de Skills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../manifests/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifiestos K8s
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Manifiestos K8s
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/deployments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/services/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/configmaps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ConfigMaps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/metrics-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/autoscaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autoscaling (HPA/VPA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../operations/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operaciones (CI/CD)
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operaciones (CI/CD)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/ci-cd-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline de Despliegue
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/docs-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline de Documentación
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../security/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seguridad
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Seguridad
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/encryption-at-rest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cifrado en Reposo (etcd)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/architecture-hardening/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Endurecimiento de Arquitectura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../skills/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Skills
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../skills/doc-style-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guía de Estilo de Documentación
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../tools/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Herramientas
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Herramientas
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/codegraph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codegraph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="agente-de-monitoreo-cronjob-network-checker">Agente de Monitoreo — CronJob (Network Checker)</h1>
+<h2 id="vision-general">Visión General</h2>
+<p>El Agente de Monitoreo es el componente más liviano del clúster pero, desde el punto de vista de la observabilidad, uno de los más importantes. Su función es actuar como un <strong>watchdog de red interno</strong>: cada 2 minutos lanza un Job efímero que verifica si el Backend está respondiendo correctamente.</p>
+<p>A diferencia del resto de los componentes (Deployments que corren indefinidamente), el CronJob no es un proceso permanente. Crea Pods que nacen, ejecutan una tarea y mueren. Este patrón es fundamental para el CKA y representa la forma idiomática de Kubernetes de gestionar tareas automatizadas y recurrentes.</p>
+<table>
+<thead>
+<tr>
+<th>Recurso</th>
+<th>Nombre</th>
+<th>Tipo de Workload</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CronJob</code></td>
+<td><code>ftth-network-checker</code></td>
+<td>Batch — Pods efímeros programados en el tiempo</td>
+</tr>
+<tr>
+<td>Pod resultante</td>
+<td><code>ftth-network-checker-&lt;hash&gt;</code></td>
+<td>Creado por el Job, vive ~segundos</td>
+</tr>
+</tbody>
+</table>
+<p>El flujo de ejecución es el siguiente:</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant KC as kube-controller-manager
+    participant CJ as CronJob Controller
+    participant J as Job
+    participant P as Pod (busybox)
+    participant BE as ftth-backend-service:5000
+
+    loop Cada 2 minutos
+        KC-&gt;&gt;CJ: ¿Es momento de disparar?
+        CJ-&gt;&gt;J: Crea un nuevo Job
+        J-&gt;&gt;P: Crea el Pod
+        P-&gt;&gt;BE: wget -qO- http://ftth-backend-service:5000/status
+        BE--&gt;&gt;P: 200 OK o fallo de conexión
+        P--&gt;&gt;J: Exit 0 (éxito) o Exit 1 (fallo)
+        J--&gt;&gt;CJ: Job completado / fallido
+        Note over P: El Pod es terminado&lt;br/&gt;y entra en historial
+    end</code></pre>
+<hr />
+<h2 id="desglose-tecnico">Desglose Técnico</h2>
+<h3 id="manifiesto-network-checker-cronjobyaml">Manifiesto — <code>network-checker-cronjob.yaml</code></h3>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">batch/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CronJob</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ftth-network-checker</span>
+<span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ftth-network-checker</span>
+<span class="w">    </span><span class="nt">tier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">worker</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">schedule</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;*/2</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*&quot;</span>
+<span class="w">  </span><span class="nt">successfulJobsHistoryLimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="w">  </span><span class="nt">failedJobsHistoryLimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">jobTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">template</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">checker</span>
+<span class="w">            </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">busybox:latest</span>
+<span class="w">            </span><span class="nt">imagePullPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">IfNotPresent</span>
+<span class="w">            </span><span class="nt">command</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/bin/sh</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-c</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">              </span><span class="no">echo &quot;--- Iniciando chequeo de salud de la red FTTH ---&quot;</span>
+<span class="w">              </span><span class="no">date</span>
+<span class="w">              </span><span class="no">wget -qO- http://ftth-backend-service:5000/status || echo &quot;¡Alerta! Fallo al conectar con el Backend de la red.&quot;</span>
+<span class="w">              </span><span class="no">echo -e &quot;\n--- Chequeo finalizado exitosamente ---&quot;</span>
+<span class="w">            </span><span class="nt">resources</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">requests</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;16Mi&quot;</span>
+<span class="w">                </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;10m&quot;</span>
+<span class="w">              </span><span class="nt">limits</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;32Mi&quot;</span>
+<span class="w">                </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;50m&quot;</span>
+<span class="w">          </span><span class="nt">restartPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OnFailure</span>
+</code></pre></div>
+<hr />
+<h3 id="anatomia-de-un-cronjob-la-jerarquia-de-recursos">Anatomía de un CronJob: La jerarquía de recursos</h3>
+<p>Esta es la parte más confusa del CronJob para quienes lo ven por primera vez, y es un punto frecuente en el examen CKA. Hay tres niveles de recursos anidados:</p>
+<div class="highlight"><pre><span></span><code>CronJob  →  crea  →  Job  →  crea  →  Pod
+</code></pre></div>
+<ul>
+<li><strong><code>CronJob</code></strong>: El "reloj". Contiene la expresión <code>schedule</code> y el <code>jobTemplate</code>. No ejecuta nada por sí solo.</li>
+<li><strong><code>Job</code></strong>: El "ejecutor". Se crea según el schedule y garantiza que el Pod se complete al menos una vez con éxito.</li>
+<li><strong><code>Pod</code></strong>: El "trabajador". Corre el contenedor real, ejecuta el script y termina.</li>
+</ul>
+<p>Esta jerarquía explica por qué el YAML del CronJob tiene tantos niveles de <code>spec</code> anidados: <code>spec</code> del CronJob → <code>jobTemplate.spec</code> del Job → <code>template.spec</code> del Pod.</p>
+<div class="admonition info">
+<p class="admonition-title">¿Por qué existe el Job como capa intermedia?</p>
+<p>El <code>Job</code> es el responsable de la <strong>garantía de completitud</strong>. Si el Pod falla (crash, error de red), el Job crea un Pod de reemplazo según la política definida en <code>restartPolicy</code>. El CronJob solo sabe cuándo disparar; el Job sabe cómo garantizar que la tarea se complete.</p>
+</div>
+<hr />
+<h3 id="la-expresion-schedule-sintaxis-cron">La expresión <code>schedule</code> — Sintaxis CRON</h3>
+<div class="highlight"><pre><span></span><code><span class="nt">schedule</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;*/2</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*&quot;</span>
+</code></pre></div>
+<p>La sintaxis CRON tiene 5 campos, separados por espacios:</p>
+<div class="highlight"><pre><span></span><code> ┌──────────── Minuto        (0-59)
+ │  ┌─────────── Hora          (0-23)
+ │  │  ┌──────────── Día del mes   (1-31)
+ │  │  │  ┌─────────── Mes          (1-12)
+ │  │  │  │  ┌──────────── Día de la semana (0-6, donde 0 = Domingo)
+ │  │  │  │  │
+*/2  *  *  *  *
+</code></pre></div>
+<p><code>*/2</code> en el campo de minutos significa "cada 2 minutos". El asterisco <code>*</code> en los demás campos significa "cualquier valor".</p>
+<table>
+<thead>
+<tr>
+<th>Expresión</th>
+<th>Significado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>*/2 * * * *</code></td>
+<td>Cada 2 minutos</td>
+</tr>
+<tr>
+<td><code>0 * * * *</code></td>
+<td>Al inicio de cada hora</td>
+</tr>
+<tr>
+<td><code>0 2 * * *</code></td>
+<td>Todos los días a las 2:00 AM</td>
+</tr>
+<tr>
+<td><code>0 0 * * 1</code></td>
+<td>Cada lunes a medianoche</td>
+</tr>
+<tr>
+<td><code>*/5 9-17 * * 1-5</code></td>
+<td>Cada 5 minutos, de 9 a 17h, de lunes a viernes</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Herramienta de referencia</p>
+<p>Para construir y validar expresiones CRON, <a href="https://crontab.guru">crontab.guru</a> es la herramienta estándar de la industria. Traduce cualquier expresión a lenguaje natural.</p>
+</div>
+<hr />
+<h3 id="restartpolicy-onfailure-la-politica-de-reinicio-del-pod"><code>restartPolicy: OnFailure</code> — La política de reinicio del Pod</h3>
+<div class="highlight"><pre><span></span><code><span class="nt">restartPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OnFailure</span>
+</code></pre></div>
+<p>Esta directiva le dice al <code>kubelet</code> qué hacer cuando el contenedor termina con un código de error (exit code distinto de 0).</p>
+<div class="admonition warning">
+<p class="admonition-title">Regla de oro: Los Pods de Job/CronJob NUNCA usan <code>restartPolicy: Always</code></p>
+<p><code>Always</code> es el valor por defecto para los Pods de Deployments. Si un Pod de Job usara <code>Always</code>, el <code>kubelet</code> lo reiniciaría indefinidamente incluso después de completarse con éxito (exit code 0), entrando en un bucle infinito. Para Jobs y CronJobs, solo se permiten <code>OnFailure</code> o <code>Never</code>.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Valor</th>
+<th>Comportamiento</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Always</code></td>
+<td>Reinicia siempre (solo para Deployments)</td>
+</tr>
+<tr>
+<td><code>OnFailure</code></td>
+<td>Reinicia solo si el Pod termina con error. Si tiene éxito, el Pod queda en estado <code>Completed</code></td>
+</tr>
+<tr>
+<td><code>Never</code></td>
+<td>Nunca reinicia. Si falla, el Job crea un Pod nuevo desde cero</td>
+</tr>
+</tbody>
+</table>
+<p>En este caso, <code>OnFailure</code> es la opción correcta: si el script de <code>wget</code> falla por un problema de red transitorio, el mismo Pod se reinicia y reintenta sin necesidad de crear uno nuevo.</p>
+<hr />
+<h3 id="control-del-historial-de-jobs">Control del historial de Jobs</h3>
+<div class="highlight"><pre><span></span><code><span class="nt">successfulJobsHistoryLimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="nt">failedJobsHistoryLimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+</code></pre></div>
+<p>Cada vez que el CronJob dispara, crea un Job. Si no se limita el historial, el clúster acumularía cientos de Jobs y Pods completados, consumiendo recursos de <code>etcd</code> y saturando el output de <code>kubectl get pods</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+<th>Comportamiento</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>successfulJobsHistoryLimit</code></td>
+<td><code>3</code></td>
+<td>Conserva los últimos 3 Jobs exitosos para inspección</td>
+</tr>
+<tr>
+<td><code>failedJobsHistoryLimit</code></td>
+<td><code>1</code></td>
+<td>Conserva solo el último Job fallido</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Por qué conservar al menos 1 Job fallido</p>
+<p>Mantener <code>failedJobsHistoryLimit: 1</code> permite que, ante una alerta de fallo, puedas ejecutar <code>kubectl logs</code> sobre el Pod del último Job fallido para diagnosticar el problema. Si el límite fuera 0, el Pod se borraría inmediatamente y perderías el contexto del error.</p>
+</div>
+<hr />
+<h3 id="la-imagen-busybox-y-el-script-de-verificacion">La imagen <code>busybox</code> y el script de verificación</h3>
+<div class="highlight"><pre><span></span><code><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">busybox:latest</span>
+<span class="nt">imagePullPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">IfNotPresent</span>
+<span class="nt">command</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/bin/sh</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-c</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">  </span><span class="no">echo &quot;--- Iniciando chequeo de salud de la red FTTH ---&quot;</span>
+<span class="w">  </span><span class="no">date</span>
+<span class="w">  </span><span class="no">wget -qO- http://ftth-backend-service:5000/status || echo &quot;¡Alerta! Fallo al conectar con el Backend.&quot;</span>
+<span class="w">  </span><span class="no">echo -e &quot;\n--- Chequeo finalizado exitosamente ---&quot;</span>
+</code></pre></div>
+<p><strong>¿Por qué <code>busybox</code>?</strong></p>
+<p>BusyBox es una imagen de Linux que combina cientos de utilidades de Unix (<code>sh</code>, <code>wget</code>, <code>ping</code>, <code>nc</code>, <code>date</code>, etc.) en un único binario que pesa menos de <strong>2 MB</strong>. Es la elección estándar en Kubernetes para tareas de scripting y diagnóstico donde no se necesita un entorno completo.</p>
+<p><strong>¿Qué hace exactamente el script?</strong></p>
+<p>El comando clave es:
+<div class="highlight"><pre><span></span><code>wget<span class="w"> </span>-qO-<span class="w"> </span>http://ftth-backend-service:5000/status<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;¡Alerta!&quot;</span>
+</code></pre></div></p>
+<ul>
+<li><code>wget -qO-</code>: Descarga la URL en modo silencioso (<code>-q</code>) y vuelca la respuesta a la salida estándar (<code>-O-</code>) en lugar de a un archivo.</li>
+<li><code>|| echo "¡Alerta!"</code>: El operador <code>||</code> (OR lógico de shell) ejecuta el <code>echo</code> solo si <code>wget</code> termina con un código de error (es decir, si la conexión falló o el servidor respondió con un código HTTP de error).</li>
+<li>El resultado queda registrado en los logs del Pod, disponible con <code>kubectl logs</code>.</li>
+</ul>
+<p><strong><code>imagePullPolicy: IfNotPresent</code></strong></p>
+<p>A diferencia del Backend (que usa <code>Never</code> porque la imagen es local), BusyBox es una imagen pública. <code>IfNotPresent</code> le dice al <code>kubelet</code> que descargue la imagen solo si no está en la caché del nodo. Esto evita pulls redundantes en cada ejecución del CronJob.</p>
+<hr />
+<h3 id="resource-requests-y-limits-minimos">Resource Requests y Limits mínimos</h3>
+<div class="highlight"><pre><span></span><code><span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">requests</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;16Mi&quot;</span>
+<span class="w">    </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;10m&quot;</span>
+<span class="w">  </span><span class="nt">limits</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;32Mi&quot;</span>
+<span class="w">    </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;50m&quot;</span>
+</code></pre></div>
+<p>El script ejecuta un <code>wget</code> y termina en menos de 2 segundos. <code>10m</code> de CPU (1% de un núcleo) y <code>16Mi</code> de RAM son más que suficientes. Estos valores tan bajos son intencionales: demuestran que el scheduler puede acomodar cientos de estos Jobs efímeros en paralelo sin impactar los workloads de larga duración del clúster.</p>
+<hr />
+<h2 id="instrucciones-de-operacion">Instrucciones de Operación</h2>
+<h3 id="aplicar-el-recurso">Aplicar el recurso</h3>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>k8s/02-deployments/network-checker-cronjob.yaml
+</code></pre></div>
+<h3 id="verificar-el-estado">Verificar el estado</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Ver el CronJob y cuándo fue su última ejecución</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>cronjob<span class="w"> </span>ftth-network-checker
+
+<span class="c1"># Ver los Jobs generados por el CronJob</span>
+kubectl<span class="w"> </span>get<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>ftth-network-checker
+
+<span class="c1"># Ver los Pods generados (incluidos los completados)</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>ftth-network-checker
+</code></pre></div>
+<p>El output esperado de <code>kubectl get pods</code> mostrará Pods en estado <code>Completed</code>:</p>
+<div class="highlight"><pre><span></span><code>NAME                                    READY   STATUS      RESTARTS   AGE
+ftth-network-checker-28934520-xk7p2    0/1     Completed   0          2m
+ftth-network-checker-28934522-9bvq1    0/1     Completed   0          4m
+</code></pre></div>
+<h3 id="ver-los-logs-de-una-ejecucion">Ver los logs de una ejecución</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Ver los logs del Job más reciente</span>
+kubectl<span class="w"> </span>logs<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>ftth-network-checker<span class="w"> </span>--tail<span class="o">=</span><span class="m">20</span>
+
+<span class="c1"># Ver logs de un Pod específico (completado)</span>
+kubectl<span class="w"> </span>logs<span class="w"> </span>&lt;nombre-del-pod-del-cronjob&gt;
+</code></pre></div>
+<p>Output esperado cuando todo funciona correctamente:</p>
+<div class="highlight"><pre><span></span><code>--- Iniciando chequeo de salud de la red FTTH ---
+Mon May 12 12:00:00 UTC 2026
+{&quot;ftth_network&quot;: &quot;Online&quot;, &quot;message&quot;: &quot;Backend conectado a Redis exitosamente&quot;, &quot;status&quot;: &quot;OK&quot;}
+
+--- Chequeo finalizado exitosamente ---
+</code></pre></div>
+<h3 id="disparar-una-ejecucion-manual-inmediata">Disparar una ejecución manual inmediata</h3>
+<p>En lugar de esperar 2 minutos, puedes crear un Job manualmente desde el CronJob para probar sin delay:</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>job<span class="w"> </span>test-manual<span class="w"> </span>--from<span class="o">=</span>cronjob/ftth-network-checker
+kubectl<span class="w"> </span>logs<span class="w"> </span>-l<span class="w"> </span>job-name<span class="o">=</span>test-manual<span class="w"> </span>-f
+</code></pre></div>
+<h3 id="suspender-y-reanudar-el-cronjob">Suspender y reanudar el CronJob</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Suspender (el CronJob deja de disparar nuevos Jobs)</span>
+kubectl<span class="w"> </span>patch<span class="w"> </span>cronjob<span class="w"> </span>ftth-network-checker<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;suspend&quot;:true}}&#39;</span>
+
+<span class="c1"># Reanudar</span>
+kubectl<span class="w"> </span>patch<span class="w"> </span>cronjob<span class="w"> </span>ftth-network-checker<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;suspend&quot;:false}}&#39;</span>
+
+<span class="c1"># Ver si está suspendido</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>cronjob<span class="w"> </span>ftth-network-checker
+</code></pre></div>
+<h3 id="debugging">Debugging</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Ver el historial completo de Jobs del CronJob</span>
+kubectl<span class="w"> </span>describe<span class="w"> </span>cronjob<span class="w"> </span>ftth-network-checker
+
+<span class="c1"># Diagnosticar un Pod en estado Error o CrashLoopBackOff</span>
+kubectl<span class="w"> </span>describe<span class="w"> </span>pod<span class="w"> </span>&lt;nombre-del-pod-fallido&gt;
+
+<span class="c1"># Ver eventos del namespace para fallas de scheduling</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>events<span class="w"> </span>--sort-by<span class="o">=</span>.lastTimestamp<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>network-checker
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Síntoma: Pods del CronJob en estado <code>Error</code> de forma recurrente</p>
+<p>Si los Pods del CronJob terminan en <code>Error</code> en lugar de <code>Completed</code>, lo más probable es que el Backend no esté respondiendo. Verifica el estado del Backend antes de profundizar en el CronJob:
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>ftth-backend
+kubectl<span class="w"> </span>logs<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>ftth-backend<span class="w"> </span>--tail<span class="o">=</span><span class="m">20</span>
+</code></pre></div>
+Si el Backend está caído, el <code>wget</code> del CronJob fallará con código de error y el Pod entrará en el ciclo de <code>OnFailure</code> hasta agotar los reintentos.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "toc.integrate", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

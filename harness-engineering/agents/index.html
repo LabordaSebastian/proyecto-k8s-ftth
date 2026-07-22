@@ -1,0 +1,2618 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentación técnica del laboratorio de Kubernetes para la preparación de la certificación CKA.">
+      
+      
+        <meta name="author" content="Sebastian Laborda">
+      
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../harness-db/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Anatomía de los Agentes - Proyecto FTTH - Kubernetes PoC</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#anatomia-de-los-agentes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Proyecto FTTH - Kubernetes PoC" class="md-header__button md-logo" aria-label="Proyecto FTTH - Kubernetes PoC" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Proyecto FTTH - Kubernetes PoC
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Anatomía de los Agentes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a modo oscuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Cambiar a modo oscuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Cambiar a modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Inicio
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Arquitectura
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../architecture/cka-concepts/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Conceptos Claves (CKA)
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Harness Engineering
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../manifests/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Manifiestos K8s
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../operations/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Operaciones (CI/CD)
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../security/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Seguridad
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../skills/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Skills
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tools/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Herramientas
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Proyecto FTTH - Kubernetes PoC" class="md-nav__button md-logo" aria-label="Proyecto FTTH - Kubernetes PoC" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Proyecto FTTH - Kubernetes PoC
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inicio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/kind-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infraestructura Local (Kind)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/manage-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Script de Automatización
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitectura
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Arquitectura
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend (Nginx)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend (API Python)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/redis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base de Datos (Redis)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/cronjob/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoreo de Red (CronJob)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/autoscaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autoscaling (VPA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/dns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servidor DNS (CoreDNS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/cka-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conceptos Claves (CKA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harness Engineering
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Harness Engineering
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anatomía de los Agentes
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anatomía de los Agentes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#vision-general" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visión General
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#desglose-tecnico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Desglose Técnico
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Desglose Técnico">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agente-0-orquestador" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agente 0: Orquestador
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Agente 0: Orquestador">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definicion-y-rol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definición y Rol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#contexto-y-archivos-asignados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto y Archivos Asignados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Activación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-el-orquestador-no-programa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Por qué el Orquestador no programa?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agente-1-infrastructure-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agente 1: Infrastructure Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Agente 1: Infrastructure Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definicion-y-rol_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definición y Rol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#contexto-y-archivos-asignados_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto y Archivos Asignados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activacion_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Activación
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agente-2-application-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agente 2: Application Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Agente 2: Application Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definicion-y-rol_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definición y Rol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#contexto-y-archivos-asignados_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto y Archivos Asignados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activacion_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Activación
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agente-3-cicd-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agente 3: CI/CD Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Agente 3: CI/CD Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definicion-y-rol_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definición y Rol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#contexto-y-archivos-asignados_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto y Archivos Asignados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activacion_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Activación
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agente-4-validation-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agente 4: Validation Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Agente 4: Validation Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definicion-y-rol_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definición y Rol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#contexto-y-archivos-asignados_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto y Archivos Asignados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activacion_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Activación
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agente-5-documentation-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agente 5: Documentation Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Agente 5: Documentation Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definicion-y-rol_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definición y Rol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#contexto-y-archivos-asignados_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto y Archivos Asignados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activacion_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Activación
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estructura-de-archivos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estructura de Archivos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#instrucciones-de-operacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instrucciones de Operación
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Instrucciones de Operación">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inspeccion-de-la-configuracion-interna" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inspección de la Configuración Interna
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modificacion-y-evolucion-de-un-agente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modificación y Evolución de un Agente
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agente-6-cka-mentor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agente 6: CKA Mentor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Agente 6: CKA Mentor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definicion-y-rol_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definición y Rol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#contexto-y-archivos-asignados_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto y Archivos Asignados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activacion_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Activación
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cka-layer-transversal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CKA Layer (Transversal)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CKA Layer (Transversal)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definicion-y-rol_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definición y Rol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filosofia-v3-build-fast-learn-deep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filosofía V3: "Build Fast, Learn Deep"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arquitectura-unificada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arquitectura Unificada
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Arquitectura Unificada">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unica-fuente-de-verdad-single-source-of-truth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Única Fuente de Verdad (Single Source of Truth)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codegraph-carga-y-mantenimiento-del-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CodeGraph — Carga y Mantenimiento del Contexto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flujo-de-trabajo-en-opencode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flujo de Trabajo en opencode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mantenimiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mantenimiento
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../harness-db/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HarnessDB (Memoria Persistente)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr-001-unification-skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 001 - Unificación de Skills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../manifests/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifiestos K8s
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Manifiestos K8s
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/deployments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/services/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/configmaps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ConfigMaps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/metrics-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/autoscaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autoscaling (HPA/VPA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../operations/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operaciones (CI/CD)
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operaciones (CI/CD)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/ci-cd-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline de Despliegue
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/docs-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline de Documentación
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../security/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seguridad
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Seguridad
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/encryption-at-rest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cifrado en Reposo (etcd)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/architecture-hardening/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Endurecimiento de Arquitectura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../skills/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Skills
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../skills/doc-style-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guía de Estilo de Documentación
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../tools/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Herramientas
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Herramientas
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/codegraph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codegraph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="anatomia-de-los-agentes">Anatomía de los Agentes</h1>
+<h2 id="vision-general">Visión General</h2>
+<p>El sistema Harness Engineering del proyecto está compuesto por 6 agentes especializados, cada uno con un contexto acotado y un protocolo de comunicación claro. Estos agentes están implementados para dos plataformas:</p>
+<p>El estándar universal del proyecto centraliza todos los agentes en el directorio nativo <code>.gemini/skills/</code>, utilizando el formato <code>SKILL.md</code> con frontmatter YAML. Ambas plataformas (Opencode y Gemini/Antigravity) leen desde esta única fuente de la verdad.</p>
+<hr />
+<h2 id="desglose-tecnico">Desglose Técnico</h2>
+<h3 id="agente-0-orquestador">Agente 0: Orquestador</h3>
+<h4 id="definicion-y-rol">Definición y Rol</h4>
+<p>Es el <strong>Router + Coordinador</strong>. Es el único agente que interactúa directamente con el usuario. No ejecuta tareas técnicas complejas por sí mismo, sino que interpreta la intención, la descompone y delega a los subagentes especializados. Consolida las respuestas antes de mostrarlas.</p>
+<h4 id="contexto-y-archivos-asignados">Contexto y Archivos Asignados</h4>
+<ul>
+<li><strong>Dominio</strong>: Repositorio completo (visión de alto nivel estructural).</li>
+<li><strong>Archivos clave</strong>: <code>README.md</code>, <code>mkdocs.yml</code>, y el mapa del repo <code>.codegraph.db</code>.</li>
+</ul>
+<h4 id="activacion">Activación</h4>
+<ul>
+<li><strong>Trigger</strong>: Siempre activo al recibir un mensaje del usuario.</li>
+<li><strong>Modo</strong>: Coordina en paralelo a los agentes técnicos y de forma secuencial al Documentation Agent.</li>
+</ul>
+<h4 id="por-que-el-orquestador-no-programa">¿Por qué el Orquestador no programa?</h4>
+<p>Si el Orquestador escribe código directamente, se contamina su contexto y corre el riesgo de romper patrones arquitectónicos. Su trabajo es entender el requerimiento general y usar las "APIs" (protocolos) de los subagentes.</p>
+<hr />
+<h3 id="agente-1-infrastructure-agent">Agente 1: Infrastructure Agent</h3>
+<h4 id="definicion-y-rol_1">Definición y Rol</h4>
+<p>Especialista en <strong>manifiestos de Kubernetes</strong>. Valida la coherencia de los archivos YAML, propone nuevos recursos declarativos y asegura que la topología del clúster mantenga las convenciones de etiquetas y puertos del proyecto.</p>
+<h4 id="contexto-y-archivos-asignados_1">Contexto y Archivos Asignados</h4>
+<ul>
+<li><strong>Dominio</strong>: <code>k8s/</code> y la configuración de Kind (<code>kind-config.yaml</code>).</li>
+</ul>
+<h4 id="activacion_1">Activación</h4>
+<ul>
+<li><strong>Trigger</strong>: "Necesito un nuevo microservicio", "Faltan limits de CPU", "Exponer un puerto".</li>
+<li><strong>Modo</strong>: Paralelo (modo lectura y propuesta, no aplica cambios directamente).</li>
+</ul>
+<hr />
+<h3 id="agente-2-application-agent">Agente 2: Application Agent</h3>
+<h4 id="definicion-y-rol_2">Definición y Rol</h4>
+<p>Especialista en <strong>código fuente</strong>. Conoce profundamente la lógica del Backend (Flask), la configuración del Frontend (Nginx), dependencias de Python y Dockerfiles. Valida contratos de API y maneja variables de entorno a nivel código.</p>
+<h4 id="contexto-y-archivos-asignados_2">Contexto y Archivos Asignados</h4>
+<ul>
+<li><strong>Dominio</strong>: <code>src/</code></li>
+</ul>
+<h4 id="activacion_2">Activación</h4>
+<ul>
+<li><strong>Trigger</strong>: "Agregar endpoint <code>/health</code>", "Actualizar la librería de Redis", "Mejorar las capas del Dockerfile".</li>
+<li><strong>Modo</strong>: Paralelo (modo lectura y propuesta).</li>
+</ul>
+<hr />
+<h3 id="agente-3-cicd-agent">Agente 3: CI/CD Agent</h3>
+<h4 id="definicion-y-rol_3">Definición y Rol</h4>
+<p>Especialista en <strong>automatización</strong>. Garantiza que cualquier cambio en código o manifiestos tenga su correspondencia en los flujos de integración y despliegue continuo. Conoce la sintaxis de GitHub Actions y Bash.</p>
+<h4 id="contexto-y-archivos-asignados_3">Contexto y Archivos Asignados</h4>
+<ul>
+<li><strong>Dominio</strong>: <code>.github/workflows/</code> y el script de bootstrap <code>manage-env.sh</code>.</li>
+</ul>
+<h4 id="activacion_3">Activación</h4>
+<ul>
+<li><strong>Trigger</strong>: "El pipeline de build falla", "Agregar el microservicio nuevo a manage-env.sh".</li>
+<li><strong>Modo</strong>: Paralelo (modo lectura y propuesta).</li>
+</ul>
+<hr />
+<h3 id="agente-4-validation-agent">Agente 4: Validation Agent</h3>
+<h4 id="definicion-y-rol_4">Definición y Rol</h4>
+<p>Verificador en <strong>runtime</strong>. Es el único agente diseñado para ejecutar comandos reales contra el clúster vivo, validando que el estado actual coincida con el declarado. </p>
+<h4 id="contexto-y-archivos-asignados_4">Contexto y Archivos Asignados</h4>
+<ul>
+<li><strong>Dominio</strong>: Comandos <code>kubectl</code> y <code>curl</code> contra <code>ftth-cluster</code>.</li>
+</ul>
+<h4 id="activacion_4">Activación</h4>
+<ul>
+<li><strong>Trigger</strong>: Post-deploy. Se invoca para verificar health checks (<code>CrashLoopBackOff</code>), endpoints respondiendo HTTP 200, y resiliencia de pods.</li>
+<li><strong>Modo</strong>: Secuencial. Actúa después de que los cambios de infraestructura fueron aplicados. <strong>Requiere permisos explícitos de ejecución.</strong></li>
+</ul>
+<hr />
+<h3 id="agente-5-documentation-agent">Agente 5: Documentation Agent</h3>
+<h4 id="definicion-y-rol_5">Definición y Rol</h4>
+<p>El <strong>guardián del conocimiento</strong>. Actúa como un <em>hook</em> (evento disparador) automático. Traduce el output técnico de los demás agentes en documentación MkDocs, manteniéndola siempre viva y fiel al código.</p>
+<h4 id="contexto-y-archivos-asignados_5">Contexto y Archivos Asignados</h4>
+<ul>
+<li><strong>Dominio</strong>: <code>docs/</code> y navegación <code>mkdocs.yml</code>.</li>
+</ul>
+<h4 id="activacion_5">Activación</h4>
+<ul>
+<li><strong>Trigger</strong>: Finalización exitosa de cualquier workflow que modifique el repositorio.</li>
+<li><strong>Modo</strong>: Secuencial (obligatorio, siempre al final).</li>
+</ul>
+<hr />
+<h2 id="estructura-de-archivos">Estructura de Archivos</h2>
+<p>Todos los agentes están consolidados en el directorio unificado <code>.gemini/skills/</code>.</p>
+<div class="highlight"><pre><span></span><code>.
+├── opencode.json                         ← configuración que apunta a .gemini/skills/
+├── AGENTS.md                             ← orquestador (instrucciones del sistema)
+└── .gemini/skills/
+    ├── infrastructure-agent/SKILL.md     ← conocimiento, convención y protocolo unificado
+    ├── application-agent/SKILL.md
+    ├── cicd-agent/SKILL.md
+    ├── validation-agent/SKILL.md
+    ├── documentation-agent/SKILL.md
+    ├── evolution-agent/SKILL.md
+    ├── cka-mentor/SKILL.md
+    └── harness-memory/SKILL.md
+</code></pre></div>
+<hr />
+<h2 id="instrucciones-de-operacion">Instrucciones de Operación</h2>
+<h3 id="inspeccion-de-la-configuracion-interna">Inspección de la Configuración Interna</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Ver el orquestador (instrucciones del sistema)</span>
+cat<span class="w"> </span>AGENTS.md
+
+<span class="c1"># Ver la configuración raíz</span>
+cat<span class="w"> </span>opencode.json
+
+<span class="c1"># Ver el conocimiento de dominio unificado de un agente</span>
+cat<span class="w"> </span>.gemini/skills/application-agent/SKILL.md
+</code></pre></div>
+<h3 id="modificacion-y-evolucion-de-un-agente">Modificación y Evolución de un Agente</h3>
+<p>Para alterar o mejorar el comportamiento de un agente, debes ajustar sus archivos de definición:</p>
+<ol>
+<li><strong>Si quieres modificar el conocimiento o el comportamiento</strong>: Edita su archivo <code>SKILL.md</code> unificado en <code>.gemini/skills/</code>.</li>
+</ol>
+<div class="admonition warning">
+<p class="admonition-title">Restricción de Contexto</p>
+<p>Nunca le agregues instrucciones de código Python al <code>infra_skill.md</code>, ni comandos de Kubernetes al <code>app_skill.md</code>. Mantener las responsabilidades estrictamente separadas es la clave de Harness Engineering.</p>
+</div>
+<hr />
+<h3 id="agente-6-cka-mentor">Agente 6: CKA Mentor</h3>
+<h4 id="definicion-y-rol_6">Definición y Rol</h4>
+<p>Tutor teórico de Kubernetes orientado al examen <strong>CKA</strong>. Responde consultas conceptuales puras ("qué es un PV", "diferencia entre DaemonSet y Deployment"), clasificando cada respuesta por dominio del examen y citando siempre <code>kubernetes.io</code> como fuente de verdad.</p>
+<h4 id="contexto-y-archivos-asignados_6">Contexto y Archivos Asignados</h4>
+<ul>
+<li><strong>Dominio</strong>: Los 5 dominios del examen CKA (Cluster Architecture, Workloads, Services, Storage, Troubleshooting).</li>
+<li><strong>Conocimiento Base</strong>: <code>.gemini/skills/cka-mentor/SKILL.md</code></li>
+<li><strong>Protocolo</strong>: <code>.gemini/skills/cka-mentor/SKILL.md</code></li>
+</ul>
+<h4 id="activacion_6">Activación</h4>
+<ul>
+<li><strong>Trigger</strong>: "Explicame", "qué es", "cómo funciona", "diferencia entre", "dominio CKA".</li>
+<li><strong>Modo</strong>: On-demand (solo cuando el usuario hace consultas teóricas).</li>
+<li><strong>Restricción</strong>: NO genera manifiestos del proyecto. Para eso están los agentes de desarrollo.</li>
+</ul>
+<hr />
+<h3 id="cka-layer-transversal">CKA Layer (Transversal)</h3>
+<h4 id="definicion-y-rol_7">Definición y Rol</h4>
+<p>No es un agente, sino una <strong>capa de explicación automática</strong> integrada en el Infrastructure Agent y el Validation Agent. Después de cada entrega de YAML o cada diagnóstico, estos agentes incluyen un bloque <code>CKA LEARNING</code> con el dominio del examen, concepto clave, explicación didáctica y referencia oficial.</p>
+<h4 id="filosofia-v3-build-fast-learn-deep">Filosofía V3: "Build Fast, Learn Deep"</h4>
+<p>El arnés (harness) está diseñado bajo la filosofía <strong>AI Pair Programming</strong>. 
+En versiones anteriores, el sistema actuaba como un tutor restrictivo (<em>Gatekeeping</em>), reteniendo respuestas para forzar al usuario a pensar. </p>
+<p>En la versión actual (v3), el sistema prioriza la <strong>velocidad de desarrollo empírico</strong>:
+1. <strong>Código Primero:</strong> El agente entrega el manifiesto o código funcional, optimizado y listo para aplicar de forma inmediata.
+2. <strong>Validación Obligatoria:</strong> Ningún código se da por finalizado ni se envía al repositorio (<code>git push</code>) sin haber sido validado en runtime (ej. probar el autoscalado con carga, matar un pod para probar resiliencia).
+3. <strong>Explicación Después (CKA Layer):</strong> Inmediatamente después del código y la prueba, el agente anexa un bloque <code>CKA LEARNING</code> explicando qué hace el recurso, cómo se relaciona con el examen CKA y compartiendo tips oficiales.
+4. <strong>Documentación Automática:</strong> Todo concepto nuevo aprendido se registra en el cheat-sheet automáticamente.</p>
+<p>Esta separación ("la máquina escribe y prueba, el humano absorbe el concepto") aumenta radicalmente el <em>Time-to-Value</em> sin sacrificar el objetivo de certificación ni la calidad del código.</p>
+<hr />
+<h2 id="arquitectura-unificada">Arquitectura Unificada</h2>
+<h3 id="unica-fuente-de-verdad-single-source-of-truth">Única Fuente de Verdad (Single Source of Truth)</h3>
+<p>Anteriormente se mantenía una dualidad de archivos entre <code>.gemini/skills</code> y <code>.opencode/skills</code>. Esta arquitectura fue modernizada: ahora <strong>TODOS</strong> los agentes viven de forma consolidada en la carpeta nativa <code>.gemini/skills/</code>, utilizando el formato estándar y universal <code>SKILL.md</code>.</p>
+<ul>
+<li><strong>Cero duplicación</strong>: Las configuraciones duales fueron eliminadas.</li>
+<li><strong>Simetría perfecta</strong>: Si agregas, modificas o borras un agente en <code>.gemini/skills/</code>, el cambio impacta automáticamente en ambas plataformas.</li>
+</ul>
+<h3 id="codegraph-carga-y-mantenimiento-del-contexto">CodeGraph — Carga y Mantenimiento del Contexto</h3>
+<p>Al iniciar cada sesión, el Orquestador ejecuta:</p>
+<div class="highlight"><pre><span></span><code>python3<span class="w"> </span>.harness/scripts/codegraph-summary.py
+</code></pre></div>
+<p>Esto consulta <code>.codegraph/codegraph.db</code> (SQLite) y devuelve la estructura indexada del proyecto (archivos, nodos, relaciones). Reemplaza la exploración manual de directorios, ahorrando tokens.</p>
+<p><strong>Sincronización Automática:</strong>
+Se ha instruido al Orquestador para que, si durante su trabajo realiza cambios estructurales (crea, borra o renombra archivos), ejecute automáticamente <code>npx @colbymchenry/codegraph sync</code>. Esto asegura que el mapa de código se mantenga vivo y nunca pierda coherencia con los archivos reales del proyecto.</p>
+<h3 id="flujo-de-trabajo-en-opencode">Flujo de Trabajo en opencode</h3>
+<div class="highlight"><pre><span></span><code>1. Usuario hace un pedido
+2. Orquestador ejecuta codegraph-summary.py → contexto del proyecto
+3. Determina el dominio (infra/app/cicd/validation/docs)
+4. Carga skill correspondiente con tool skill(name=&quot;&lt;dominio&gt;&quot;)
+5. El skill indica qué archivos .gemini/skills/&lt;agente&gt;/SKILL.md leer
+6. Lee esos archivos (contenido vivo, siempre actualizado)
+7. Delega a task(subagent_type=&quot;general&quot;) con rol + skill content + pedido
+8. Sub-agente devuelve propuesta
+9. Orquestador consolida y presenta el resultado
+</code></pre></div>
+<h3 id="mantenimiento">Mantenimiento</h3>
+<table>
+<thead>
+<tr>
+<th>Escenario</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Se crea, edita o elimina un skill</td>
+<td>Hacerlo directamente en la carpeta nativa <code>.gemini/skills/</code> (impacta globalmente)</td>
+</tr>
+<tr>
+<td>Se crean o borran archivos en el proyecto</td>
+<td>El Orquestador ejecuta <code>npx @colbymchenry/codegraph sync</code> automáticamente</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "toc.integrate", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,2200 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentación técnica del laboratorio de Kubernetes para la preparación de la certificación CKA.">
+      
+      
+        <meta name="author" content="Sebastian Laborda">
+      
+      
+      
+        <link rel="prev" href="../dns/">
+      
+      
+        <link rel="next" href="../../harness-engineering/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Conceptos Claves (CKA) - Proyecto FTTH - Kubernetes PoC</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#conceptos-claves-cka-cheat-sheet" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Proyecto FTTH - Kubernetes PoC" class="md-header__button md-logo" aria-label="Proyecto FTTH - Kubernetes PoC" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Proyecto FTTH - Kubernetes PoC
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Conceptos Claves (CKA)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a modo oscuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Cambiar a modo oscuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Cambiar a modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Inicio
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Arquitectura
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Conceptos Claves (CKA)
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../harness-engineering/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Harness Engineering
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../manifests/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Manifiestos K8s
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../operations/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Operaciones (CI/CD)
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../security/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Seguridad
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../skills/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Skills
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tools/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Herramientas
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Proyecto FTTH - Kubernetes PoC" class="md-nav__button md-logo" aria-label="Proyecto FTTH - Kubernetes PoC" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Proyecto FTTH - Kubernetes PoC
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inicio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/kind-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infraestructura Local (Kind)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/manage-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Script de Automatización
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitectura
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Arquitectura
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend (Nginx)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend (API Python)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../redis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base de Datos (Redis)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cronjob/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoreo de Red (CronJob)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autoscaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autoscaling (VPA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servidor DNS (CoreDNS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conceptos Claves (CKA)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conceptos Claves (CKA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#vision-general" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visión General
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#desglose-tecnico-de-conceptos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Desglose Técnico de Conceptos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Desglose Técnico de Conceptos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-deployments-y-rolling-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Deployments y Rolling Updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-vertical-pod-autoscaler-vpa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Vertical Pod Autoscaler (VPA)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-horizontal-pod-autoscaler-hpa-y-cooldown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Horizontal Pod Autoscaler (HPA) y Cooldown
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-services-clusterip-vs-nodeport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Services: ClusterIP vs NodePort
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-liveness-readiness-y-prestop-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Liveness, Readiness y PreStop Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-configmaps-cm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. ConfigMaps (CM)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-cronjobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. CronJobs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-resource-requests-y-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Resource Requests y Limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-imagepullpolicy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. imagePullPolicy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-node-affinity-y-node-selectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Node Affinity y Node Selectors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-taints-y-tolerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Taints y Tolerations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-relacion-deployment-replicaset-pod" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Relación Deployment -&gt; ReplicaSet -&gt; Pod
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#11-volumes-y-volumemounts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Volumes y VolumeMounts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../harness-engineering/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harness Engineering
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Harness Engineering
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../harness-engineering/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anatomía de los Agentes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../harness-engineering/harness-db/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HarnessDB (Memoria Persistente)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../harness-engineering/adr-001-unification-skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 001 - Unificación de Skills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../manifests/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifiestos K8s
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Manifiestos K8s
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/deployments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/services/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/configmaps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ConfigMaps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/metrics-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/autoscaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autoscaling (HPA/VPA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../operations/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operaciones (CI/CD)
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operaciones (CI/CD)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/ci-cd-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline de Despliegue
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/docs-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline de Documentación
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../security/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seguridad
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Seguridad
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/encryption-at-rest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cifrado en Reposo (etcd)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/architecture-hardening/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Endurecimiento de Arquitectura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../skills/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Skills
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../skills/doc-style-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guía de Estilo de Documentación
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../tools/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Herramientas
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Herramientas
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/codegraph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codegraph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="conceptos-claves-cka-cheat-sheet">Conceptos Claves (CKA Cheat-Sheet)</h1>
+<h2 id="vision-general">Visión General</h2>
+<p>Esta sección sirve como <strong>material de repaso acelerado</strong> orientado a la certificación <strong>Certified Kubernetes Administrator (CKA)</strong>. Desglosa los componentes arquitectónicos fundamentales implementados en el proyecto FTTH-K8s, explicando su rol desde la teoría oficial de Kubernetes hasta su aplicación práctica en nuestro entorno.</p>
+<table>
+<thead>
+<tr>
+<th>Recurso</th>
+<th>Nivel de Examen</th>
+<th>Aplicación en el Proyecto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Deployment</code></td>
+<td>Fundamental</td>
+<td>Gestión de Backend, Frontend y Redis</td>
+</tr>
+<tr>
+<td><code>Service</code></td>
+<td>Fundamental</td>
+<td>Red interna (ClusterIP) y externa (NodePort)</td>
+</tr>
+<tr>
+<td><code>Probes</code></td>
+<td>Intermedio</td>
+<td>Health checks del Backend (<code>/health</code>)</td>
+</tr>
+<tr>
+<td><code>CronJob</code></td>
+<td>Fundamental</td>
+<td>Tarea de monitoreo de red (<code>ftth-network-checker</code>)</td>
+</tr>
+<tr>
+<td><code>ConfigMap</code></td>
+<td>Fundamental</td>
+<td>Inyección del código estático del Frontend</td>
+</tr>
+<tr>
+<td><code>Volumes</code></td>
+<td>Fundamental</td>
+<td>Montaje del ConfigMap dentro del Nginx</td>
+</tr>
+<tr>
+<td><code>Requests &amp; Limits</code></td>
+<td>Avanzado (Scheduling)</td>
+<td>QoS y prevención de OOMKilled/Throttling</td>
+</tr>
+<tr>
+<td><code>Affinity &amp; Taints</code></td>
+<td>Avanzado (Scheduling)</td>
+<td>Control estricto de en qué nodo cae Redis y Kubeview</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="desglose-tecnico-de-conceptos">Desglose Técnico de Conceptos</h2>
+<h3 id="1-deployments-y-rolling-updates">1. Deployments y Rolling Updates</h3>
+<ul>
+<li><strong>¿Qué es?</strong> Un controlador de Kubernetes que proporciona actualizaciones declarativas para Pods y ReplicaSets.</li>
+<li><strong>¿Para qué sirve?</strong> Garantiza que el número deseado de Pods esté siempre en ejecución. Si un nodo falla, el Deployment levanta los Pods en un nodo sano. Además, gestiona transiciones seguras entre versiones.</li>
+<li><strong>Caso de uso en el proyecto:</strong> <code>ftth-backend-deployment</code> declara <code>replicas: 2</code>. Utiliza la estrategia <code>RollingUpdate</code> con <code>maxSurge: 1</code> y <code>maxUnavailable: 0</code>, lo que significa que durante una actualización (ej. cambio de imagen a <code>v2</code>), Kubernetes creará un pod nuevo antes de destruir los viejos, garantizando cero <em>downtime</em>.</li>
+</ul>
+<h3 id="2-vertical-pod-autoscaler-vpa">2. Vertical Pod Autoscaler (VPA)</h3>
+<ul>
+<li><strong>¿Qué es?</strong> Un controlador avanzado que ajusta automáticamente los <code>requests</code> y <code>limits</code> (CPU/Memoria) de los contenedores basándose en su uso real en el tiempo.</li>
+<li><strong>¿Para qué sirve?</strong> Evita el adivinar recursos. En lugar de escalar agregando más réplicas (como el HPA), el VPA escala inyectando más recursos a las réplicas existentes. Si un pod se queda corto, el VPA lo evicta (mata) y su Admission Controller inyecta los nuevos recursos cuando el pod se recrea.</li>
+<li><strong>Caso de uso en el proyecto:</strong> Implementado en <code>k8s/05-autoscaling/redis-vpa.yaml</code> (<code>updateMode: "Auto"</code>). Durante pruebas de estrés, el VPA detectó falta de memoria en la base de datos, mató el pod y lo reinició con límites más altos (250Mi) automáticamente.</li>
+<li><strong>Trampa CKA:</strong> El VPA y el HPA no deben usarse juntos sobre la misma métrica (ej. CPU). Además, el VPA siempre requiere que el Metrics Server esté operativo en el clúster.</li>
+</ul>
+<h3 id="3-horizontal-pod-autoscaler-hpa-y-cooldown">3. Horizontal Pod Autoscaler (HPA) y Cooldown</h3>
+<ul>
+<li><strong>¿Qué es?</strong> Un recurso de la API de K8s que actualiza automáticamente un recurso de carga de trabajo (Deployment o StatefulSet), escalando la cantidad de réplicas para igualar la demanda.</li>
+<li><strong>¿Para qué sirve?</strong> Para absorber picos de tráfico. Si el tráfico sube, crea más pods. Si baja, los destruye. </li>
+<li><strong>Caso de uso en el proyecto:</strong> Implementado en <code>k8s/05-autoscaling/backend-hpa.yaml</code> para mantener la CPU del backend al 70%. En nuestra validación empírica, ante un ataque con <code>wget</code>, el HPA escaló las réplicas de 2 a 5.</li>
+<li><strong>Trampa CKA (Thrashing &amp; Cooldown):</strong> En el examen, si detienes la carga de un pod, verás que el HPA <strong>no reduce los pods de inmediato</strong>. Kubernetes implementa por defecto un <em>Scale Down Stabilization Window</em> de 5 minutos para evitar el <em>thrashing</em> (crear y destruir pods constantemente por fluctuaciones rápidas).</li>
+</ul>
+<h3 id="2-services-clusterip-vs-nodeport">2. Services: ClusterIP vs NodePort</h3>
+<ul>
+<li><strong>¿Qué es?</strong> Una abstracción que define un conjunto lógico de Pods y una política de red para acceder a ellos. Desacopla la red dinámica de los Pods (que cambian de IP al reiniciarse) ofreciendo un DNS o IP estable.</li>
+<li><strong>¿Para qué sirve?</strong></li>
+<li><strong><code>ClusterIP</code> (Por defecto):</strong> Expone el servicio solo dentro del clúster K8s.</li>
+<li><strong><code>NodePort</code>:</strong> Abre un puerto estático (rango 30000-32767) en todos los nodos trabajadores, permitiendo tráfico desde fuera del clúster.</li>
+<li><strong>Caso de uso en el proyecto:</strong> </li>
+<li>El Redis y el Backend utilizan <code>ClusterIP</code> porque son bases de datos y APIs internas (el usuario final nunca debería golpear la base de datos directamente).</li>
+<li>El Frontend utiliza <code>NodePort: 30080</code> para que puedas acceder al dashboard desde el navegador de tu computadora anfitriona (<code>http://localhost:30080</code>).</li>
+</ul>
+<h3 id="3-liveness-readiness-y-prestop-hooks">3. Liveness, Readiness y PreStop Hooks</h3>
+<ul>
+<li><strong>¿Qué son?</strong> Diagnósticos (Probes) y eventos de ciclo de vida ejecutados periódicamente por el Kubelet en cada nodo.</li>
+<li><strong>¿Para qué sirven?</strong></li>
+<li><strong><code>ReadinessProbe</code>:</strong> Le dice al <code>Service</code> cuándo el Pod está listo para recibir tráfico web.</li>
+<li><strong><code>LivenessProbe</code>:</strong> Le dice al <code>Kubelet</code> cuándo la aplicación se colgó (deadlock) y necesita que se reinicie el contenedor.</li>
+<li><strong><code>PreStop Hook</code>:</strong> Ejecuta un comando antes de enviar el <code>SIGTERM</code> al Pod, permitiendo cierres gráciles (graceful shutdown).</li>
+<li><strong>Caso de uso en el proyecto:</strong> En el Backend, apuntamos <code>httpGet</code> a <code>/health</code> por el puerto 5000. Si la DB (Redis) se cae y el Backend no puede operar, el <em>readiness probe</em> fallará, sacando al pod del <em>Load Balancer</em> del Service temporalmente, pero sin reiniciarlo a la fuerza.</li>
+</ul>
+<h3 id="4-configmaps-cm">4. ConfigMaps (CM)</h3>
+<ul>
+<li><strong>¿Qué es?</strong> Un objeto de la API usado para almacenar datos no confidenciales en formato clave-valor.</li>
+<li><strong>¿Para qué sirve?</strong> Para desacoplar la configuración específica del entorno de la imagen del contenedor, permitiendo que las imágenes sean portátiles (Doce Factores / Twelve-Factor App).</li>
+<li><strong>Caso de uso en el proyecto:</strong> El archivo estático <code>index.html</code> del frontend completo se almacena como un ConfigMap (<code>frontend-configmap.yaml</code>) y se inyecta vía <code>volumeMount</code> directo al Nginx. Esto permite editar el diseño del dashboard y aplicarlo con <code>kubectl apply</code> sin tener que hacer <code>docker build</code> de la imagen del Nginx.</li>
+</ul>
+<h3 id="5-cronjobs">5. CronJobs</h3>
+<ul>
+<li><strong>¿Qué es?</strong> Un controlador que crea <code>Jobs</code> (trabajos finitos) en un horario programado similar al formato <code>cron</code> de Linux.</li>
+<li><strong>¿Para qué sirve?</strong> Backups de bases de datos, envíos de emails en lote, o monitoreo periódico. A diferencia de un Pod normal, se espera que el contenedor muera (termine) exitosamente una vez finalizada la tarea.</li>
+<li><strong>Caso de uso en el proyecto:</strong> <code>ftth-network-checker</code> se activa cada 2 minutos (<code>*/2 * * * *</code>). Levanta un contenedor ligero (BusyBox), ejecuta un <code>wget</code> contra el backend, y muere. La regla <code>restartPolicy: OnFailure</code> asegura que el Pod no se reinicie a menos que el script devuelva un código de error.</li>
+</ul>
+<h3 id="6-resource-requests-y-limits">6. Resource Requests y Limits</h3>
+<ul>
+<li><strong>¿Qué son?</strong> Parámetros de Quality of Service (QoS). </li>
+<li><code>Requests</code>: Lo que el scheduler garantiza que el nodo tiene disponible antes de ubicar el pod.</li>
+<li><code>Limits</code>: El límite máximo que el contenedor puede consumir.</li>
+<li><strong>¿Para qué sirven?</strong> Proteger los recursos del nodo (CPU/Memoria).</li>
+<li>Si un pod excede su límite de Memoria → Es asesinado por el kernel del nodo (<code>OOMKilled</code>).</li>
+<li>Si un pod excede su límite de CPU → Su ejecución es ralentizada (<code>Throttled</code>), pero no muere.</li>
+<li><strong>Caso de uso en el proyecto:</strong> Cada componente tiene estos parámetros definidos. Por ejemplo, la imagen pesada del Python API requiere como mínimo <code>64Mi</code> de RAM, pero nunca se le permitirá usar más de <code>128Mi</code> (en cuyo caso sería terminado para evitar que afecte al Nginx o Redis del mismo nodo).</li>
+</ul>
+<h3 id="7-imagepullpolicy">7. imagePullPolicy</h3>
+<ul>
+<li><strong>¿Qué es?</strong> Política de Kubelet sobre cuándo contactar al registry de contenedores (Docker Hub, ECR, etc.).</li>
+<li><strong>¿Para qué sirve?</strong> Las opciones son <code>Always</code>, <code>IfNotPresent</code> o <code>Never</code>.</li>
+<li><strong>Caso de uso en el proyecto:</strong> Dado que usamos un clúster local (Kind), construimos la imagen de Python localmente. Si K8s intentara buscar <code>ftth-backend:v1</code> en Docker Hub, fallaría (<code>ImagePullBackOff</code>). Usar <code>imagePullPolicy: Never</code> le ordena explícitamente usar la imagen en caché del nodo.</li>
+</ul>
+<h3 id="8-node-affinity-y-node-selectors">8. Node Affinity y Node Selectors</h3>
+<ul>
+<li><strong>¿Qué es?</strong> Reglas de <em>scheduling</em> que atraen los Pods hacia Nodos específicos basados en las etiquetas (labels) del Nodo.</li>
+<li><strong>¿Para qué sirve?</strong> Asegurar que ciertas cargas de trabajo (ej. bases de datos, procesamiento GPU) caigan en los servidores físicos correctos.</li>
+<li><strong>Caso de uso en el proyecto:</strong> En <code>redis-deployment.yaml</code>, usamos <code>nodeAffinity</code> exigiendo que el nodo destino tenga el label <code>role=database</code> (<code>requiredDuringSchedulingIgnoredDuringExecution</code>). Si ningún nodo cumple, el Pod de Redis se quedará en estado <code>Pending</code>.</li>
+</ul>
+<h3 id="9-taints-y-tolerations">9. Taints y Tolerations</h3>
+<ul>
+<li><strong>¿Qué son?</strong> El opuesto a la Afinidad. Un <em>Taint</em> repele a los Pods de un Nodo. Un <em>Toleration</em> le permite a un Pod ignorar esa repulsión.</li>
+<li><strong>¿Para qué sirve?</strong> Dedicar Nodos enteros a usos exclusivos (ej. Nodos del Control Plane que repelen cargas de usuario).</li>
+<li><strong>Caso de uso en el proyecto:</strong> Aunque la infraestructura <em>core</em> no impone taints estrictos, la herramienta externa que instalamos (<code>kubeview</code>) está configurada vía Helm (<code>values.yaml</code>) para aceptar un array de <code>tolerations: []</code>. Esto es clave en CKA: si querés que Kubeview corra en el Control Plane, tendrías que pasarle el <em>toleration</em> para ignorar el taint por defecto <code>node-role.kubernetes.io/control-plane:NoSchedule</code>.</li>
+</ul>
+<h3 id="10-relacion-deployment-replicaset-pod">10. Relación Deployment -&gt; ReplicaSet -&gt; Pod</h3>
+<ul>
+<li><strong>¿Qué es?</strong> La jerarquía de controladores en Kubernetes.</li>
+<li><strong>¿Para qué sirve?</strong> El usuario casi nunca crea <code>Pods</code> directamente. Crea <code>Deployments</code>.</li>
+<li><strong>Caso de uso en el proyecto:</strong> Cuando aplicamos <code>backend-deployment.yaml</code>, el objeto <code>Deployment</code> crea y gestiona un objeto <code>ReplicaSet</code> de forma transparente. Este ReplicaSet es el que realmente asegura que haya 2 réplicas del Pod corriendo. Si inspeccionás con <code>kubectl get rs</code>, verás objetos con nombres como <code>ftth-backend-6d8b4c95f</code> (donde el sufijo alfanumérico representa el hash del template de ese despliegue).</li>
+</ul>
+<h3 id="11-volumes-y-volumemounts">11. Volumes y VolumeMounts</h3>
+<ul>
+<li><strong>¿Qué son?</strong> Abstracciones de almacenamiento atadas al ciclo de vida del Pod (o más persistentes si usamos PVs/PVCs).</li>
+<li><strong>¿Para qué sirven?</strong> Montar archivos, directorios, o proveer almacenamiento persistente dentro del sistema de archivos efímero del contenedor.</li>
+<li><strong>Caso de uso en el proyecto:</strong> En el <code>frontend-deployment.yaml</code> declaramos un volumen de tipo <code>configMap</code> llamado <code>html-volume</code>. Luego, usamos <code>volumeMounts</code> para mapear ese volumen sobre la ruta <code>/usr/share/nginx/html/</code> dentro del pod Nginx, pisando el index.html original.</li>
+</ul>
+<hr />
+<div class="admonition tip">
+<p class="admonition-title">Consejo CKA: Resolución de Problemas</p>
+<p>Durante el examen, si un servicio no resuelve, revisá siempre las tres capas en este orden: <strong>1.</strong> ¿Están los Pods en estado <code>Running</code> y <code>Ready</code>? (<code>kubectl get pods</code>), <strong>2.</strong> ¿Coinciden los <code>matchLabels</code> del Service con los del Pod? (<code>kubectl get endpoints</code>), <strong>3.</strong> ¿Las NetworkPolicies están bloqueando el tráfico?</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "toc.integrate", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

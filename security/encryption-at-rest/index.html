@@ -1,0 +1,2619 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentación técnica del laboratorio de Kubernetes para la preparación de la certificación CKA.">
+      
+      
+        <meta name="author" content="Sebastian Laborda">
+      
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../architecture-hardening/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Cifrado en Reposo (etcd) - Proyecto FTTH - Kubernetes PoC</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#seguridad-cifrado-en-reposo-de-etcd-encryption-at-rest" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Proyecto FTTH - Kubernetes PoC" class="md-header__button md-logo" aria-label="Proyecto FTTH - Kubernetes PoC" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Proyecto FTTH - Kubernetes PoC
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Cifrado en Reposo (etcd)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a modo oscuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Cambiar a modo oscuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Cambiar a modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Inicio
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Arquitectura
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../architecture/cka-concepts/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Conceptos Claves (CKA)
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../harness-engineering/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Harness Engineering
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../manifests/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Manifiestos K8s
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../operations/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Operaciones (CI/CD)
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Seguridad
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../skills/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Skills
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tools/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Herramientas
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Proyecto FTTH - Kubernetes PoC" class="md-nav__button md-logo" aria-label="Proyecto FTTH - Kubernetes PoC" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Proyecto FTTH - Kubernetes PoC
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inicio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/kind-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infraestructura Local (Kind)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/manage-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Script de Automatización
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitectura
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Arquitectura
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend (Nginx)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend (API Python)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/redis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base de Datos (Redis)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/cronjob/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoreo de Red (CronJob)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/autoscaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autoscaling (VPA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/dns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servidor DNS (CoreDNS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/cka-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conceptos Claves (CKA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../harness-engineering/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harness Engineering
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Harness Engineering
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../harness-engineering/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anatomía de los Agentes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../harness-engineering/harness-db/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HarnessDB (Memoria Persistente)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../harness-engineering/adr-001-unification-skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 001 - Unificación de Skills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../manifests/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifiestos K8s
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Manifiestos K8s
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/deployments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/services/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/configmaps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ConfigMaps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/metrics-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifests/autoscaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autoscaling (HPA/VPA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../operations/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operaciones (CI/CD)
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operaciones (CI/CD)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/ci-cd-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline de Despliegue
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/docs-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline de Documentación
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seguridad
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Seguridad
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cifrado en Reposo (etcd)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cifrado en Reposo (etcd)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#vision-general" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visión General
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#desglose-tecnico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Desglose Técnico
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Desglose Técnico">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fase-1-demostracion-de-la-vulnerabilidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 1 — Demostración de la Vulnerabilidad
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fase 1 — Demostración de la Vulnerabilidad">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#paso-1-crear-un-secret-de-prueba" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 1: Crear un Secret de prueba
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-2-comprobar-que-base64-no-es-cifrado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 2: Comprobar que base64 no es cifrado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-3-leer-el-secret-directamente-desde-etcd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 3: Leer el Secret directamente desde etcd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-etcdctl_api3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Por qué ETCDCTL_API=3?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-4-verificar-que-el-cifrado-aun-no-esta-activo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 4: Verificar que el cifrado aún no está activo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-2-creacion-de-la-configuracion-de-cifrado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 2 — Creación de la Configuración de Cifrado
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fase 2 — Creación de la Configuración de Cifrado">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#paso-5-generar-la-clave-de-cifrado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 5: Generar la clave de cifrado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-32-bytes-y-base64" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Por qué 32 bytes y base64?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-6-crear-el-archivo-encyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 6: Crear el archivo enc.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-identity-al-final-y-no-al-principio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Por qué identity: {} al final y no al principio?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-7-ubicar-el-archivo-en-el-directorio-seguro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 7: Ubicar el archivo en el directorio seguro
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-etckubernetesenc-y-no-otro-directorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Por qué /etc/kubernetes/enc/ y no otro directorio?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-3-reconfiguracion-del-api-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 3 — Reconfiguración del API Server
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fase 3 — Reconfiguración del API Server">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#paso-8-editar-el-manifiesto-del-api-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 8: Editar el manifiesto del API Server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-se-necesitan-las-tres-modificaciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Por qué se necesitan las tres modificaciones?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-9-verificar-que-el-api-server-tomo-los-cambios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 9: Verificar que el API Server tomó los cambios
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-4-validacion-y-migracion-de-secretos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 4 — Validación y Migración de Secretos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fase 4 — Validación y Migración de Secretos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#paso-10-verificar-que-los-nuevos-secretos-se-cifran" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 10: Verificar que los nuevos secretos se cifran
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-hexdump-c-y-no-solo-get" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Por qué hexdump -C y no solo get?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-11-migrar-los-secretos-existentes-al-nuevo-cifrado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 11: Migrar los secretos existentes al nuevo cifrado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-replace-y-no-apply" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Por qué replace y no apply?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#instrucciones-de-operacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instrucciones de Operación
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Instrucciones de Operación">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resumen-de-ejecucion-completa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de ejecución completa
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verificar-el-estado-del-cifrado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verificar el estado del cifrado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debugging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debugging
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture-hardening/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Endurecimiento de Arquitectura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../skills/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Skills
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../skills/doc-style-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guía de Estilo de Documentación
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../tools/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Herramientas
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Herramientas
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/codegraph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codegraph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="seguridad-cifrado-en-reposo-de-etcd-encryption-at-rest">Seguridad — Cifrado en Reposo de etcd (Encryption at Rest)</h1>
+<h2 id="vision-general">Visión General</h2>
+<p>Por defecto, Kubernetes almacena todos los <code>Secrets</code> en <code>etcd</code> codificados en <strong>base64</strong>, pero sin ningún cifrado real. Cualquiera con acceso directo al servidor de <code>etcd</code> puede leer ese contenido en texto plano con un simple comando. El <strong>Cifrado en Reposo</strong> (<code>Encryption at Rest</code>) resuelve esto configurando el <code>kube-apiserver</code> para que cifre los secretos antes de escribirlos en <code>etcd</code>, usando el algoritmo AES-CBC con una clave de 32 bytes.</p>
+<table>
+<thead>
+<tr>
+<th>Artefacto</th>
+<th>Ubicación</th>
+<th>Propósito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EncryptionConfiguration</code></td>
+<td><code>/etc/kubernetes/enc/enc.yaml</code></td>
+<td>Define el proveedor de cifrado y la clave</td>
+</tr>
+<tr>
+<td>Flag del API Server</td>
+<td><code>--encryption-provider-config</code></td>
+<td>Apunta al archivo de configuración</td>
+</tr>
+<tr>
+<td>Manifiesto del API Server</td>
+<td><code>/etc/kubernetes/manifests/kube-apiserver.yaml</code></td>
+<td>Se edita para activar el flag y montar el volumen</td>
+</tr>
+</tbody>
+</table>
+<p>El flujo de escritura de un Secret cambia así al activar el cifrado:</p>
+<pre class="mermaid"><code>sequenceDiagram
+    actor Dev as kubectl / CI-CD
+    participant API as kube-apiserver
+    participant EP as Encryption Provider&lt;br/&gt;(AES-CBC key1)
+    participant etcd as etcd
+
+    Note over Dev,etcd: ANTES — Sin cifrado
+    Dev-&gt;&gt;API: kubectl create secret my-secret
+    API-&gt;&gt;etcd: Escribe en base64 (texto legible)
+
+    Note over Dev,etcd: DESPUÉS — Con Encryption at Rest
+    Dev-&gt;&gt;API: kubectl create secret my-secret2
+    API-&gt;&gt;EP: Cifra el payload con AES-CBC/key1
+    EP--&gt;&gt;API: Ciphertext con prefijo k8s:enc:aescbc:v1:key1:
+    API-&gt;&gt;etcd: Escribe el ciphertext (ilegible sin la clave)</code></pre>
+<div class="admonition warning">
+<p class="admonition-title">Este procedimiento se ejecuta dentro del nodo control-plane</p>
+<p>Todos los comandos de las Fases 2 y 3 se ejecutan <strong>dentro del contenedor del control plane</strong> de Kind, no desde tu terminal de host. Accedés con <code>docker exec -it ftth-cluster-control-plane /bin/bash</code>.</p>
+</div>
+<hr />
+<h2 id="desglose-tecnico">Desglose Técnico</h2>
+<h3 id="fase-1-demostracion-de-la-vulnerabilidad">Fase 1 — Demostración de la Vulnerabilidad</h3>
+<p>Antes de configurar nada, este paso demuestra por qué el estado por defecto de Kubernetes es inseguro para datos sensibles. Es opcional pero altamente recomendado para el CKA, ya que el examen puede pedirte que verifiques si un secreto está o no cifrado.</p>
+<h4 id="paso-1-crear-un-secret-de-prueba">Paso 1: Crear un Secret de prueba</h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Crear un Secret genérico con un valor sensible</span>
+kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>my-secret<span class="w"> </span>--from-literal<span class="o">=</span><span class="nv">key1</span><span class="o">=</span>supersecret
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>secret/my-secret created
+</code></pre></div>
+<h4 id="paso-2-comprobar-que-base64-no-es-cifrado">Paso 2: Comprobar que base64 no es cifrado</h4>
+<p>Si inspeccionás el Secret con <code>kubectl get secrets my-secret -o yaml</code>, el campo <code>data.key1</code> aparece como <code>c3VwZXJzZWNyZXQ=</code>. Eso es simplemente base64, no cifrado:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Decodificar el valor: cualquier persona con acceso puede hacer esto</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;c3VwZXJzZWNyZXQ=&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>--decode
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>supersecret
+</code></pre></div>
+<h4 id="paso-3-leer-el-secret-directamente-desde-etcd">Paso 3: Leer el Secret directamente desde etcd</h4>
+<p>Este es el paso que prueba la vulnerabilidad real. Para hacerlo, necesitás acceder al nodo del control plane e interactuar con <code>etcd</code> usando sus certificados de autenticación.</p>
+<p>Verificar que el Pod de <code>etcd</code> está corriendo:</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kube-system
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>NAME                                              READY   STATUS    RESTARTS   AGE
+coredns-76f75df574-htxgx                          1/1     Running   0          33m
+etcd-ftth-cluster-control-plane                   1/1     Running   0          33m
+kube-apiserver-ftth-cluster-control-plane         1/1     Running   0          33m
+...
+</code></pre></div>
+<p>Desde <strong>dentro del nodo control-plane</strong>, verificar los certificados disponibles para autenticarse con <code>etcd</code>:</p>
+<div class="highlight"><pre><span></span><code>ls<span class="w"> </span>-la<span class="w"> </span>/etc/kubernetes/pki/etcd/
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>total 40
+drwxr-xr-x 2 root root 4096 May 20 13:40 .
+drwxr-xr-x 3 root root 4096 May 20 13:40 ..
+-rw-r--r-- 1 root root 1094 May 20 13:40 ca.crt
+-rw------- 1 root root 1675 May 20 13:40 ca.key
+-rw-r--r-- 1 root root 1123 May 20 13:40 healthcheck-client.crt
+-rw------- 1 root root 1679 May 20 13:40 healthcheck-client.key
+-rw-r--r-- 1 root root 1245 May 20 13:40 peer.crt
+-rw------- 1 root root 1679 May 20 13:40 peer.key
+-rw-r--r-- 1 root root 1245 May 20 13:40 server.crt
+-rw------- 1 root root 1679 May 20 13:40 server.key
+</code></pre></div>
+<div class="admonition info">
+<p class="admonition-title">¿Por qué se necesitan estos certificados?</p>
+<p><code>etcd</code> requiere autenticación TLS mutua (mTLS) para toda comunicación. Ni siquiera el <code>kube-apiserver</code> puede hablar con <code>etcd</code> sin presentar un certificado válido. Los archivos <code>server.crt</code> y <code>server.key</code> son las credenciales que usás para autenticarte como cliente. La <code>ca.crt</code> es la Autoridad Certificante que valida la conexión.</p>
+</div>
+<p>Instalar la herramienta cliente <code>etcdctl</code> dentro del nodo:</p>
+<div class="highlight"><pre><span></span><code>apt-get<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>etcd-client
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>...
+The following NEW packages will be installed:
+  etcd-client
+0 upgraded, 1 newly installed, 0 to remove and 67 not upgraded.
+...
+Setting up etcd-client (3.4.23-4+b4)
+</code></pre></div>
+<p>Consultar el Secret directamente en la base de datos:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">ETCDCTL_API</span><span class="o">=</span><span class="m">3</span><span class="w"> </span>etcdctl<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cacert<span class="o">=</span>/etc/kubernetes/pki/etcd/ca.crt<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cert<span class="o">=</span>/etc/kubernetes/pki/etcd/server.crt<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--key<span class="o">=</span>/etc/kubernetes/pki/etcd/server.key<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>get<span class="w"> </span>/registry/secrets/default/my-secret
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>/registry/secrets/default/my-secret
+...
+{&quot;f:data&quot;:{&quot;.&quot;:{},&quot;f:key1&quot;:{}},&quot;f:type&quot;:{}}B
+key1
+supersecretOpaque&quot;
+</code></pre></div>
+<p>El valor <code>supersecret</code> aparece en texto plano. La vulnerabilidad está demostrada.</p>
+<h4 id="por-que-etcdctl_api3">¿Por qué <code>ETCDCTL_API=3</code>?</h4>
+<p><code>etcdctl</code> soporta dos versiones de API (<code>v2</code> y <code>v3</code>). Kubernetes usa <strong>exclusivamente la API v3</strong> desde la versión 3.x de <code>etcd</code>. Sin este flag de entorno, el cliente intentaría usar la API v2 y el comando fallaría silenciosamente o retornaría resultados incorrectos.</p>
+<table>
+<thead>
+<tr>
+<th>Variable de entorno</th>
+<th>Valor</th>
+<th>Efecto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ETCDCTL_API=3</code></td>
+<td><code>3</code></td>
+<td>Activa los comandos de la API v3 (<code>get</code>, <code>put</code>, <code>del</code>)</td>
+</tr>
+<tr>
+<td>Sin variable</td>
+<td>—</td>
+<td>Usa API v2 por defecto (incompatible con K8s)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="paso-4-verificar-que-el-cifrado-aun-no-esta-activo">Paso 4: Verificar que el cifrado aún no está activo</h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Buscar el flag de cifrado en el proceso activo del API Server</span>
+ps<span class="w"> </span>aux<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>kube-api<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;encryption-provider-config&quot;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>(sin salida — el flag no está presente)
+</code></pre></div>
+<p>Sin salida significa que el <code>kube-apiserver</code> no tiene ningún proveedor de cifrado configurado.</p>
+<hr />
+<h3 id="fase-2-creacion-de-la-configuracion-de-cifrado">Fase 2 — Creación de la Configuración de Cifrado</h3>
+<h4 id="paso-5-generar-la-clave-de-cifrado">Paso 5: Generar la clave de cifrado</h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Generar 32 bytes aleatorios y codificarlos en base64</span>
+head<span class="w"> </span>-c<span class="w"> </span><span class="m">32</span><span class="w"> </span>/dev/urandom<span class="w"> </span><span class="p">|</span><span class="w"> </span>base64
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>&lt;PEGAR_AQUÍ_LA_CLAVE_GENERADA_EN_PASO_5&gt;
+</code></pre></div>
+<h4 id="por-que-32-bytes-y-base64">¿Por qué 32 bytes y base64?</h4>
+<p>El algoritmo AES-CBC que usa Kubernetes para el cifrado en reposo requiere una clave de exactamente <strong>256 bits = 32 bytes</strong>. La codificación en base64 es necesaria porque el archivo YAML no acepta bytes binarios directamente; necesita la clave representada como texto ASCII.</p>
+<div class="admonition warning">
+<p class="admonition-title">Esta clave es el único punto de fallo</p>
+<p>Si perdés esta clave, <strong>perdés acceso a todos los Secrets cifrados con ella</strong>. En producción, esta clave se gestiona a través de un KMS (Key Management Service) como AWS KMS o HashiCorp Vault. Nunca la guardes en el repositorio de código.</p>
+</div>
+<h4 id="paso-6-crear-el-archivo-encyaml">Paso 6: Crear el archivo <code>enc.yaml</code></h4>
+<p>Dentro del nodo control-plane, crear el archivo con la clave generada:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apiserver.config.k8s.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">EncryptionConfiguration</span>
+<span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">resources</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">secrets</span>
+<span class="w">    </span><span class="nt">providers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">aescbc</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">keys</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">key1</span>
+<span class="w">              </span><span class="nt">secret</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;PEGAR_AQUÍ_LA_CLAVE_GENERADA_EN_PASO_5&gt;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">  </span><span class="c1"># Permite leer secretos no cifrados durante la migración inicial</span>
+</code></pre></div>
+<h4 id="por-que-identity-al-final-y-no-al-principio">¿Por qué <code>identity: {}</code> al final y no al principio?</h4>
+<p>El orden de los <code>providers</code> importa. El <strong>primer proveedor</strong> de la lista es el que se usa para <strong>escribir</strong> nuevos secretos. Los proveedores siguientes se intentan en orden para <strong>leer</strong> secretos existentes.</p>
+<table>
+<thead>
+<tr>
+<th>Posición de <code>identity: {}</code></th>
+<th>Efecto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Primero (antes de <code>aescbc</code>)</td>
+<td>Todos los secretos se escriben sin cifrar. Cifrado desactivado en la práctica.</td>
+</tr>
+<tr>
+<td>Último (después de <code>aescbc</code>)</td>
+<td>Los secretos nuevos se cifran con AES-CBC. Los secretos viejos (sin cifrar) se siguen pudiendo leer durante la migración. ✅</td>
+</tr>
+</tbody>
+</table>
+<p><code>identity: {}</code> es el proveedor nulo: lee y escribe sin transformación. Es necesario durante la migración para que el API Server pueda leer los secretos viejos (como <code>my-secret</code>) mientras no hayan sido re-cifrados todavía.</p>
+<div class="admonition tip">
+<p class="admonition-title">La extensión del archivo importa</p>
+<p>El archivo debe llamarse <code>enc.yaml</code> (con <code>.yaml</code>), no <code>enc.yml</code>. El flag del API Server es case-sensitive respecto a la extensión.</p>
+</div>
+<h4 id="paso-7-ubicar-el-archivo-en-el-directorio-seguro">Paso 7: Ubicar el archivo en el directorio seguro</h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Crear el directorio dedicado</span>
+mkdir<span class="w"> </span>/etc/kubernetes/enc/
+
+<span class="c1"># Mover el archivo al directorio</span>
+mv<span class="w"> </span>enc.yaml<span class="w"> </span>/etc/kubernetes/enc/
+
+<span class="c1"># Verificar que está en su lugar</span>
+ls<span class="w"> </span>/etc/kubernetes/enc/
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>enc.yaml
+</code></pre></div>
+<h4 id="por-que-etckubernetesenc-y-no-otro-directorio">¿Por qué <code>/etc/kubernetes/enc/</code> y no otro directorio?</h4>
+<p>El directorio <code>/etc/kubernetes/</code> ya está <strong>montado como volumen</strong> en el Pod del <code>kube-apiserver</code> por defecto (para acceder a los manifiestos y PKI). Crear un subdirectorio allí simplifica la configuración del volumen adicional. Usar un directorio fuera de <code>/etc/kubernetes/</code> requeriría un <code>hostPath</code> más complejo y permisos adicionales en el nodo.</p>
+<hr />
+<h3 id="fase-3-reconfiguracion-del-api-server">Fase 3 — Reconfiguración del API Server</h3>
+<p>El <code>kube-apiserver</code> en entornos Kind (y en general en clústeres creados con <code>kubeadm</code>) se gestiona como un <strong>Static Pod</strong>: su manifiesto YAML vive en <code>/etc/kubernetes/manifests/</code> y el <code>kubelet</code> lo monitorea directamente. Cualquier cambio en ese archivo hace que el <code>kubelet</code> destruya y recree el Pod automáticamente, sin intervención manual.</p>
+<h4 id="paso-8-editar-el-manifiesto-del-api-server">Paso 8: Editar el manifiesto del API Server</h4>
+<div class="highlight"><pre><span></span><code>vi<span class="w"> </span>/etc/kubernetes/manifests/kube-apiserver.yaml
+</code></pre></div>
+<p>Hay que realizar <strong>tres modificaciones</strong> en bloques distintos del mismo archivo:</p>
+<p><strong>A — Agregar el flag al array de comandos (<code>spec.containers[0].command</code>)</strong></p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--encryption-provider-config=/etc/kubernetes/enc/enc.yaml</span>
+</code></pre></div>
+<p><strong>B — Agregar el <code>volumeMount</code> al contenedor (<code>spec.containers[0].volumeMounts</code>)</strong></p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">enc</span>
+<span class="w">      </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/kubernetes/enc</span>
+<span class="w">      </span><span class="nt">readOnly</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<p><strong>C — Agregar el volumen al Pod (<code>spec.volumes</code>)</strong></p>
+<div class="highlight"><pre><span></span><code><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">enc</span>
+<span class="w">    </span><span class="nt">hostPath</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/kubernetes/enc</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DirectoryOrCreate</span>
+</code></pre></div>
+<h4 id="por-que-se-necesitan-las-tres-modificaciones">¿Por qué se necesitan las tres modificaciones?</h4>
+<p>Estas tres piezas trabajan en conjunto usando el mismo mecanismo de montaje de volúmenes que ya viste en el <a href="../../architecture/frontend/">Frontend con su ConfigMap</a>:</p>
+<table>
+<thead>
+<tr>
+<th>Modificación</th>
+<th>Función</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>spec.volumes</code></td>
+<td>Le dice a Kubernetes que el directorio <code>/etc/kubernetes/enc</code> del <strong>nodo</strong> existe como volumen llamado <code>enc</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[0].volumeMounts</code></td>
+<td>Monta ese volumen dentro del <strong>contenedor</strong> del API Server en la misma ruta</td>
+</tr>
+<tr>
+<td><code>spec.containers[0].command</code></td>
+<td>Le dice al proceso del API Server dónde encontrar el archivo de configuración dentro del contenedor</td>
+</tr>
+</tbody>
+</table>
+<p>Sin el volumen y el mount, el proceso del <code>kube-apiserver</code> no puede ver el archivo <code>enc.yaml</code>, aunque esté en el nodo. Sin el flag, el proceso ni siquiera busca ese archivo.</p>
+<div class="admonition info">
+<p class="admonition-title">El <code>kubelet</code> como guardia del Static Pod</p>
+<p>Después de guardar el archivo, el <code>kubelet</code> detecta el cambio en cuestión de segundos y reinicia el Pod del <code>kube-apiserver</code>. Durante ese reinicio (que dura entre 30 y 60 segundos), el clúster no acepta nuevas operaciones. Es normal ver errores temporales de <code>connection refused</code> al hacer <code>kubectl get pods</code> en ese momento.</p>
+</div>
+<h4 id="paso-9-verificar-que-el-api-server-tomo-los-cambios">Paso 9: Verificar que el API Server tomó los cambios</h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Confirmar que el proceso activo ya tiene el flag de cifrado</span>
+ps<span class="w"> </span>aux<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>kube-api<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>encryp
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>kube-apiserver --advertise-address=172.21.0.3 ... --encryption-provider-config=/etc/kubernetes/enc/enc.yaml
+</code></pre></div>
+<p>El flag aparece al final de la cadena de argumentos del proceso. Si no aparece, esperá 30 segundos más y reintentá (el API Server puede estar todavía reiniciándose).</p>
+<hr />
+<h3 id="fase-4-validacion-y-migracion-de-secretos">Fase 4 — Validación y Migración de Secretos</h3>
+<h4 id="paso-10-verificar-que-los-nuevos-secretos-se-cifran">Paso 10: Verificar que los nuevos secretos se cifran</h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Crear un nuevo Secret post-configuración</span>
+kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>my-secret2<span class="w"> </span>--from-literal<span class="o">=</span><span class="nv">key2</span><span class="o">=</span>topsecret
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>secret/my-secret2 created
+</code></pre></div>
+<p>Luego consultar su representación en <code>etcd</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">ETCDCTL_API</span><span class="o">=</span><span class="m">3</span><span class="w"> </span>etcdctl<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cacert<span class="o">=</span>/etc/kubernetes/pki/etcd/ca.crt<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cert<span class="o">=</span>/etc/kubernetes/pki/etcd/server.crt<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--key<span class="o">=</span>/etc/kubernetes/pki/etcd/server.key<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>get<span class="w"> </span>/registry/secrets/default/my-secret2<span class="w"> </span><span class="p">|</span><span class="w"> </span>hexdump<span class="w"> </span>-C
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>... |/registry/secret|
+... |s/default/my-sec|
+... |ret2.k8s:enc:aes|
+... |cbc:v1:key1: ...|
+</code></pre></div>
+<p>El prefijo <code>k8s:enc:aescbc:v1:key1:</code> confirma que el Secret fue cifrado con el proveedor <code>aescbc</code> usando la clave llamada <code>key1</code>. El contenido después del prefijo es ciphertext ilegible.</p>
+<h4 id="por-que-hexdump-c-y-no-solo-get">¿Por qué <code>hexdump -C</code> y no solo <code>get</code>?</h4>
+<p>El <code>get</code> directo de <code>etcdctl</code> imprime caracteres binarios al terminal, lo que puede ser confuso o corromper la salida de la sesión. <code>hexdump -C</code> convierte el output binario a una representación hexadecimal + ASCII imprimible, que es lo que te permite ver el prefijo <code>k8s:enc:aescbc:v1:key1:</code> de forma legible.</p>
+<h4 id="paso-11-migrar-los-secretos-existentes-al-nuevo-cifrado">Paso 11: Migrar los secretos existentes al nuevo cifrado</h4>
+<p>El Secret <code>my-secret</code> creado en el Paso 1 sigue almacenado en texto plano en <code>etcd</code>. La configuración de cifrado <strong>solo afecta a escrituras nuevas</strong>, no modifica retroactivamente los secretos existentes.</p>
+<p>Para forzar que todos los secretos pasen por el Encryption Provider, hay que releerlos y reescribirlos:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Leer todos los Secrets de todos los namespaces y reescribirlos</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>secrets<span class="w"> </span>--all-namespaces<span class="w"> </span>-o<span class="w"> </span>json<span class="w"> </span><span class="p">|</span><span class="w"> </span>kubectl<span class="w"> </span>replace<span class="w"> </span>-f<span class="w"> </span>-
+</code></pre></div>
+<p>La salida muestra cada Secret siendo reemplazado:</p>
+<div class="highlight"><pre><span></span><code>secret/my-secret replaced
+secret/default-token-xxxxx replaced
+secret/kube-proxy-token-xxxxx replaced
+...
+</code></pre></div>
+<h4 id="por-que-replace-y-no-apply">¿Por qué <code>replace</code> y no <code>apply</code>?</h4>
+<p><code>kubectl replace</code> fuerza la <strong>reescritura completa</strong> del objeto en la API, lo que hace que el <code>kube-apiserver</code> lo procese a través del Encryption Provider antes de enviarlo a <code>etcd</code>. <code>kubectl apply</code> solo envía un patch con las diferencias, y si el objeto no cambió, puede que no desencadene una reescritura completa. <code>replace</code> garantiza el cifrado de todos los secretos sin excepción.</p>
+<div class="admonition tip">
+<p class="admonition-title">Verificación final</p>
+<p>Después de la migración, si volvés a consultar <code>my-secret</code> con <code>etcdctl get</code>, ahora también deberías ver el prefijo <code>k8s:enc:aescbc:v1:key1:</code> en lugar del texto plano <code>supersecret</code>.</p>
+</div>
+<hr />
+<h2 id="instrucciones-de-operacion">Instrucciones de Operación</h2>
+<h3 id="resumen-de-ejecucion-completa">Resumen de ejecución completa</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># === DESDE TU HOST ===</span>
+
+<span class="c1"># 1. Crear Secret de prueba (para demostrar vulnerabilidad)</span>
+kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>my-secret<span class="w"> </span>--from-literal<span class="o">=</span><span class="nv">key1</span><span class="o">=</span>supersecret
+
+<span class="c1"># 2. Ingresar al nodo control-plane</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>ftth-cluster-control-plane<span class="w"> </span>/bin/bash
+
+<span class="c1"># === DENTRO DEL NODO CONTROL-PLANE ===</span>
+
+<span class="c1"># 3. Generar clave de cifrado</span>
+head<span class="w"> </span>-c<span class="w"> </span><span class="m">32</span><span class="w"> </span>/dev/urandom<span class="w"> </span><span class="p">|</span><span class="w"> </span>base64
+
+<span class="c1"># 4. Crear directorio y archivo de configuración</span>
+mkdir<span class="w"> </span>/etc/kubernetes/enc/
+cat<span class="w"> </span>&gt;<span class="w"> </span>/etc/kubernetes/enc/enc.yaml<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
+<span class="s">apiVersion: apiserver.config.k8s.io/v1</span>
+<span class="s">kind: EncryptionConfiguration</span>
+<span class="s">resources:</span>
+<span class="s">  - resources:</span>
+<span class="s">      - secrets</span>
+<span class="s">    providers:</span>
+<span class="s">      - aescbc:</span>
+<span class="s">          keys:</span>
+<span class="s">            - name: key1</span>
+<span class="s">              secret: &lt;TU_CLAVE_GENERADA_EN_PASO_3&gt;</span>
+<span class="s">      - identity: {}</span>
+<span class="s">EOF</span>
+
+<span class="c1"># 5. Editar el manifiesto del API Server (agregar flag, volumeMount y volume)</span>
+vi<span class="w"> </span>/etc/kubernetes/manifests/kube-apiserver.yaml
+
+<span class="c1"># 6. Esperar el reinicio del API Server (~60 segundos)</span>
+watch<span class="w"> </span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kube-system
+
+<span class="c1"># === DESDE TU HOST (después del reinicio) ===</span>
+
+<span class="c1"># 7. Verificar que el flag está activo</span>
+ps<span class="w"> </span>aux<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>kube-api<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>encryp
+
+<span class="c1"># 8. Migrar secretos existentes</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>secrets<span class="w"> </span>--all-namespaces<span class="w"> </span>-o<span class="w"> </span>json<span class="w"> </span><span class="p">|</span><span class="w"> </span>kubectl<span class="w"> </span>replace<span class="w"> </span>-f<span class="w"> </span>-
+</code></pre></div>
+<h3 id="verificar-el-estado-del-cifrado">Verificar el estado del cifrado</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Confirmar que el API Server tiene el flag activo</span>
+ps<span class="w"> </span>aux<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>kube-api<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;encryption-provider-config&quot;</span>
+
+<span class="c1"># Verificar que un Secret nuevo está cifrado en etcd (desde dentro del nodo)</span>
+<span class="nv">ETCDCTL_API</span><span class="o">=</span><span class="m">3</span><span class="w"> </span>etcdctl<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cacert<span class="o">=</span>/etc/kubernetes/pki/etcd/ca.crt<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cert<span class="o">=</span>/etc/kubernetes/pki/etcd/server.crt<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--key<span class="o">=</span>/etc/kubernetes/pki/etcd/server.key<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>get<span class="w"> </span>/registry/secrets/default/&lt;nombre-del-secret&gt;<span class="w"> </span><span class="p">|</span><span class="w"> </span>hexdump<span class="w"> </span>-C<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;enc:aes&quot;</span>
+</code></pre></div>
+<h3 id="debugging">Debugging</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Si el API Server no levanta después de editar el manifiesto</span>
+<span class="c1"># Ver los logs del kubelet que describe el error del Static Pod</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>kubelet<span class="w"> </span>-f<span class="w"> </span>--no-pager<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span><span class="s2">&quot;kube-apiserver&quot;</span>
+
+<span class="c1"># Si kubectl no responde (API Server reiniciándose)</span>
+<span class="c1"># Esperar y reintentar</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>nodes
+
+<span class="c1"># Ver los eventos del namespace kube-system</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>events<span class="w"> </span>-n<span class="w"> </span>kube-system<span class="w"> </span>--sort-by<span class="o">=</span>.lastTimestamp<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span><span class="s2">&quot;apiserver&quot;</span>
+
+<span class="c1"># Si el API Server arranca pero el cifrado no funciona</span>
+<span class="c1"># Verificar que el archivo enc.yaml está bien montado dentro del contenedor</span>
+kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-n<span class="w"> </span>kube-system<span class="w"> </span>kube-apiserver-ftth-cluster-control-plane<span class="w"> </span>--<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>ls<span class="w"> </span>-la<span class="w"> </span>/etc/kubernetes/enc/
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Síntoma crítico: <code>kube-apiserver</code> no levanta después de editar el manifiesto</p>
+<p>Si el API Server no vuelve a estar en <code>Running</code> después de 2-3 minutos, el error más común es un YAML mal formado en <code>kube-apiserver.yaml</code>. Volvé a editar el manifiesto y verificá la indentación. Un error de sintaxis en ese archivo deja el clúster completamente inaccesible hasta que se corrija.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "toc.integrate", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
