@@ -16,3 +16,4 @@ Para cada componente encontrarás:
 | API de estado de red | Deployment + Variables de entorno | [Backend (Python)](backend.md) |
 | Almacenamiento de estado | Deployment + Node Affinity | [Base de Datos (Redis)](redis.md) |
 | Verificación de red | CronJob + RestartPolicy | [Agente de Monitoreo](cronjob.md) |
+| Servidor DNS Custom | Deployment + ConfigMap + NodePort | [Servidor DNS (CoreDNS)](dns.md) |

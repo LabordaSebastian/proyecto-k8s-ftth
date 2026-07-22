@@ -10,6 +10,12 @@ nodes:
     - containerPort: 30088  # KubeView - visualización del clúster
       hostPort: 30088
       protocol: TCP
+    - containerPort: 30053
+      hostPort: 30053
+      protocol: TCP
+    - containerPort: 30053
+      hostPort: 30053
+      protocol: UDP
   - role: worker
     labels:
       role: database
